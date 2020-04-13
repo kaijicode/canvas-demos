@@ -44,24 +44,14 @@
 
             drawBall(x, y, ballRadius);
 
-            // if collides with top wall
-            if (y - ballRadius <= 0) {
-                ySpeed = 2;
+            // if collides with top wall or bottom wall
+            if (y - ballRadius <= 0 || y + ballRadius >= canvas.height) {
+                ySpeed = -ySpeed;
             }
 
-            // if collides with bottom wall
-            if (y + ballRadius >= canvas.height) {
-                ySpeed = -2;
-            }
-
-            // if collides with left wall
-            if (x + ballRadius >= canvas.width) {
-                xSpeed = -2;
-            }
-
-            // if collides with right wall
-            if (x - ballRadius <= 0) {
-                xSpeed = 2;
+            // if collides with left wall or right wall
+            if (x + ballRadius >= canvas.width || x - ballRadius <= 0) {
+                xSpeed = -xSpeed;
             }
 
             x += xSpeed;
