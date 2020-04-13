@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { 
+            padding: 0; 
+            margin: 0;
+        }
+
+        canvas { 
+            background: #eee; 
+            display: block; 
+            margin: 0 auto; 
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" width="480" height="320"></canvas>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+
+        let xSpeed = 2;
+        let ySpeed = -2;
+        const ballRadius = 10;
+        const colors = ['red', 'blue', 'green'];
+
+        function drawBall(x, y, radius) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI*2);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBall(x, y, ballRadius);
+
+            // if collides with top wall
+            if (y - ballRadius <= 0) {
+                ySpeed = 2;
+            }
+
+            // if collides with bottom wall
+            if (y + ballRadius >= canvas.height) {
+                ySpeed = -2;
+            }
+
+            // if collides with left wall
+            if (x + ballRadius >= canvas.width) {
+                xSpeed = -2;
+            }
+
+            // if collides with right wall
+            if (x - ballRadius <= 0) {
+                xSpeed = 2;
+            }
+
+            x += xSpeed;
+            y += ySpeed;
+        }
+
+        setInterval(draw, 10);
+    </script>
+</body>
+</html>
