@@ -108,8 +108,17 @@
             drawBall(x, y, ballRadius);
             drawPaddle(paddleX, paddleY, paddleWidth, paddleHeight);
 
-            // if collides with top wall or bottom wall
-            if (y - ballRadius <= 0 || y + ballRadius >= canvas.height) {
+
+            // if collides with floor, stop the game.
+            if (y + ballRadius >= canvas.height) {
+                console.log('Game Over');
+                clearInterval(gameLoop);
+                xSpeed = 0;
+                ySpeed = 0;
+            }
+
+            // if collides with top wall
+            if (y - ballRadius <= 0) {
                 ySpeed = -ySpeed;
             }
 
@@ -117,6 +126,12 @@
             if (x + ballRadius >= canvas.width || x - ballRadius <= 0) {
                 xSpeed = -xSpeed;
             }
+
+            // // if ball collides with the paddle (top surface)
+            if (y + ballRadius >= paddleY && ((x >= paddleX) && (x <= paddleX+paddleWidth))) {
+                ySpeed = -ySpeed;
+            }
+
 
             x += xSpeed;
             y += ySpeed;
@@ -134,7 +149,7 @@
             }
         }
 
-        setInterval(draw, 10);
+        const gameLoop = setInterval(draw, 10);
     </script>
 </body>
 </html>
