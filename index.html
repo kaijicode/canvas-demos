@@ -35,115 +35,60 @@
         var canvas = document.getElementById("canvas");
         var ctx = canvas.getContext("2d");
 
-        let x = canvas.width / 2;
-        let y = canvas.height / 2;
+        const balls = [
+            createBall(canvas.width / 2, canvas.height / 2, 10, {x: 2, y: -2}),
+            // createBall(0, canvas.height, 10, {x: 2, y: -2}, 'purple'),
+        ];
 
-        let xSpeed = 2;
-        let ySpeed = -2;
-        const ballRadius = 10;
+        function createBall(x, y, radius, speed, color = "#0095DD") {
+            return {x, y, radius, speed, color};
+        }
 
-        const paddleHeight = 10;
-        const paddleWidth = 75;
-        let paddleX = (canvas.width - paddleWidth) / 2;
-        const paddleY = canvas.height - paddleHeight;
-        const paddleSpeed = 7;
-
-        let isRightKeyPressed = false;
-        let isLeftKeyPressed = false;
-
-        document.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('keyup', handleKeyUp);
-
-        function drawBall(x, y, radius) {
+        function drawBall(ball) {
             ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI*2);
-            ctx.fillStyle = "#0095DD";
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
+            ctx.fillStyle = ball.color;
             ctx.fill();
             ctx.closePath();
         }
 
-        function drawPaddle(x, y, width, height) {
-            ctx.beginPath();
-            ctx.rect(x, y, width, height);
-            ctx.fillStyle = "#0095DD";
-            ctx.fill();
-            ctx.closePath();
+        function detectCollision(ballA, ballB) {
+
         }
 
-        function handleKeyDown(event) {
-            switch (event.key) {
-                case 'Right':
-                case 'ArrowRight':
-                    isRightKeyPressed = true;
-                
-                case 'Left':
-                case 'ArrowLeft':
-                    isLeftKeyPressed = true;
+        function detectWallCollision(ball) {
+            const collision = {x: ball.speed.x, y: ball.speed.y};
 
-                default:
-                    break;
-            }
-        }
-
-        function handleKeyUp(event) {
-            switch (event.key) {
-                case 'Right':
-                case 'ArrowRight':
-                    isRightKeyPressed = false;
-                
-                case 'Left':
-                case 'ArrowLeft':
-                    isLeftKeyPressed = false;
-
-                default:
-                    break;
-            }
-        }
- 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            drawBall(x, y, ballRadius);
-            drawPaddle(paddleX, paddleY, paddleWidth, paddleHeight);
-
-
-            // if collides with floor, stop the game.
-            if (y + ballRadius >= canvas.height) {
-                console.log('Game Over');
-                xSpeed = 0;
-                ySpeed = 0;
-            }
-
-            // if collides with top wall
-            if (y - ballRadius <= 0) {
-                ySpeed = -ySpeed;
+            if (ball.y - ball.radius <= 0 || ball.y + ball.radius >= canvas.height) {
+                collision.y = -collision.y;
             }
 
             // if collides with left wall or right wall
-            if (x + ballRadius >= canvas.width || x - ballRadius <= 0) {
-                xSpeed = -xSpeed;
+            if (ball.x + ball.radius >= canvas.width || ball.x - ball.radius <= 0) {
+                collision.x = -collision.x;
             }
 
-            // // if ball collides with the paddle (top surface)
-            if (y + ballRadius >= paddleY && ((x >= paddleX) && (x <= paddleX+paddleWidth))) {
-                ySpeed = -ySpeed;
-            }
+            return collision;
+        }
 
+        function applyCollision(ball, collision) {
+            ball.speed = {...ball.speed, ...collision};
+            ball.x += ball.speed.x;
+            ball.y += ball.speed.y;
+        }
 
-            x += xSpeed;
-            y += ySpeed;
+        function changeBallSpeed(ball, newSpeed) {
+            ball.speed = newSpeed;
+        }
 
-            if (isRightKeyPressed) {
-                paddleX += paddleSpeed;
-                if (paddleX + paddleWidth > canvas.width) {
-                    paddleX = canvas.width - paddleWidth;
-                }
-            } else if (isLeftKeyPressed) {
-                paddleX -= paddleSpeed;
-                if (paddleX < 0) {
-                    paddleX = 0;
-                }
-            }
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            balls.forEach((ball) => {
+                drawBall(ball);
+                applyCollision(ball, detectWallCollision(ball));
+            });
+
             requestAnimationFrame(draw);
         }
 
