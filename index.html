@@ -48,7 +48,6 @@
         const paddleY = canvas.height - paddleHeight;
         const paddleSpeed = 7;
 
-
         let isRightKeyPressed = false;
         let isLeftKeyPressed = false;
 
@@ -70,7 +69,6 @@
             ctx.fill();
             ctx.closePath();
         }
-
 
         function handleKeyDown(event) {
             switch (event.key) {
@@ -112,7 +110,6 @@
             // if collides with floor, stop the game.
             if (y + ballRadius >= canvas.height) {
                 console.log('Game Over');
-                clearInterval(gameLoop);
                 xSpeed = 0;
                 ySpeed = 0;
             }
@@ -147,9 +144,10 @@
                     paddleX = 0;
                 }
             }
+            requestAnimationFrame(draw);
         }
 
-        const gameLoop = setInterval(draw, 10);
+        draw();
     </script>
 </body>
 </html>
