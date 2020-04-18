@@ -56,15 +56,27 @@
             '#607D8B',
         ];
 
-        const balls = new Array(100).fill(null).map((x, index) => {
+        const balls = new Array(20).fill(null).map((x, index) => {
             return createBall(
                 randomBetween(canvas.width * 0.1, canvas.width * 0.9), 
                 randomBetween(canvas.height * 0.1, canvas.height * 0.9), 
                 10, // radius
-                {x: randomBetween(-2, 2), y: randomBetween(-2, 2)}, 
+                // {x: randomBetween(-2, 2), y: randomBetween(-2, 2)}, 
+                randomItem([
+                    {x: 1, y: 1},
+                    {x: 2, y: 2},
+                    {x: 3, y: 3},
+                    {x: -1, y: -1},
+                    {x: -2, y: -2},
+                    {x: -3, y: -3},
+                ]),
                 colors[randomBetween(0, colors.length-1)]
             );
         });
+
+        function randomItem(items) {
+            return items[randomBetween(0, items.length-1)];
+        }
 
         function createBall(x, y, radius, speed, color = "#0095DD") {
             return {x, y, radius, speed, color};
@@ -145,28 +157,28 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // for (let i = 0; i < balls.length; i += 1) {
-            //     const ball = balls[i];
-            //     drawBall(ball);
-            //     applyCollision(ball, detectWallCollision(ball));
-
-            //     for (let j = 0; j < balls.length; j += 1) {
-            //         if (i !== j && j+1 < balls.length) {
-            //             const nextBall = balls[j];
-            //             const ballCollision = detectBallCollision(ball, nextBall);
-
-            //             if (ballCollision.isCollision) {
-            //                 applyCollision(ball, ballCollision.first);
-            //                 applyCollision(nextBall, ballCollision.second);
-            //             }
-            //         }
-            //     }
-            // }
-
-            balls.forEach((ball) => {
+            for (let i = 0; i < balls.length; i += 1) {
+                const ball = balls[i];
                 drawBall(ball);
                 applyCollision(ball, detectWallCollision(ball));
-            });
+
+                for (let j = 0; j < balls.length; j += 1) {
+                    if (i !== j && j+1 < balls.length) {
+                        const nextBall = balls[j];
+                        const ballCollision = detectBallCollision(ball, nextBall);
+
+                        if (ballCollision.isCollision) {
+                            applyCollision(ball, ballCollision.first);
+                            applyCollision(nextBall, ballCollision.second);
+                        }
+                    }
+                }
+            }
+
+            // balls.forEach((ball) => {
+            //     drawBall(ball);
+            //     applyCollision(ball, detectWallCollision(ball));
+            // });
 
             requestAnimationFrame(draw);
         }
