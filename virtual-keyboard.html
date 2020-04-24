@@ -123,67 +123,123 @@
             //     }
             // }
 
-            // function drawMultiDimensionalBoxes() {
-            //     const boxes = [
-            //         [1, 2, 3, 4],
-            //         [1, 2, 3],
-            //         [1, 2],
-            //         [1]
-            //     ];
-            //
-            //     for (let i = 0; i < boxes.length; i += 1) {
-            //         for (let j = 0; j < boxes[i].length; j += 1) {
-            //             scene.fillRect(width * j + gap * j, height * i + marginTop * i, width, height);
-            //         }
-            //     }
-            // }
+            function drawMultiDimensionalBoxes() {
+                const boxes = [
+                    [1, 2, 3, 4],
+                    [1, 2, 3],
+                    [1, 2],
+                    [1]
+                ];
+
+                for (let i = 0; i < boxes.length; i += 1) {
+                    for (let j = 0; j < boxes[i].length; j += 1) {
+                        scene.fillRect(width * j + gap * j, height * i + marginTop * i, width, height);
+                    }
+                }
+            }
             // drawMultiDimensionalBoxes();
 
-            // function drawBoxesEvenly() {
-            //     const gap = 30;
-            //     const height = 50;
-            //     const marginTop = 30;
-            //     const boxes = [
-            //         [1, 2, 3, 4],
-            //         [1, 2, 3],
-            //         [1, 2],
-            //         [1]
-            //     ];
-            //
-            //     // spread items in row evenly
-            //     for (let i = 0; i < boxes.length; i += 1) {
-            //         const totalGap = (boxes[i].length - 1) * gap;
-            //         const widthPerBox = (canvas.width - totalGap) / boxes[i].length;
-            //         for (let j = 0; j < boxes[i].length; j += 1) {
-            //             scene.fillRect(widthPerBox * j + gap * j, height * i + marginTop * i, widthPerBox, height);
-            //         }
-            //     }
-            // }
+            function drawBoxesEvenly() {
+                const gap = 30;
+                const height = 50;
+                const marginTop = 30;
+                const boxes = [
+                    [1, 2, 3, 4],
+                    [1, 2, 3],
+                    [1, 2],
+                    [1]
+                ];
+
+                // spread items in row evenly
+                for (let i = 0; i < boxes.length; i += 1) {
+                    const totalGap = (boxes[i].length - 1) * gap;
+                    const widthPerBox = (canvas.width - totalGap) / boxes[i].length;
+                    for (let j = 0; j < boxes[i].length; j += 1) {
+                        scene.fillRect(widthPerBox * j + gap * j, height * i + marginTop * i, widthPerBox, height);
+                    }
+                }
+            }
             // drawBoxesEvenly();
 
-            // function drawBoxesProportionally() {
-            //     const gap = 30;
-            //     const height = 50;
-            //
-            //     const boxes = [
-            //         {columnRatio: 1}, {columnRatio: 2}, {columnRatio: 1},
-            //     ]
-            //
-            //     // solve x for: canvas.width = x + 2x + x;
-            //     const totalGap = (boxes.length - 1) * gap;
-            //     const pointValue = (canvas.width - totalGap) / boxes.reduce((total, point) => total + point.columnRatio, 0);
-            //     const boxesWithWidth = boxes.map((box) => {
-            //         return {...box, width: box.columnRatio * pointValue};
-            //     });
-            //
-            //     let x = 0;
-            //     for (let i = 0; i < boxesWithWidth.length; i += 1) {
-            //         scene.fillRect(x, 0, boxesWithWidth[i].width, height);
-            //         x = x + boxesWithWidth[i].width + gap;
-            //     }
-            // }
-            //
+            function drawBoxesProportionally() {
+                const gap = 30;
+                const height = 50;
+
+                const boxes = [
+                    {columnRatio: 1}, {columnRatio: 2}, {columnRatio: 1},
+                ]
+
+                // solve x for: canvas.width = x + 2x + x;
+                const totalGap = (boxes.length - 1) * gap;
+                const pointValue = (canvas.width - totalGap) / boxes.reduce((total, point) => total + point.columnRatio, 0);
+                const boxesWithWidth = boxes.map((box) => {
+                    return {...box, width: box.columnRatio * pointValue};
+                });
+
+                let x = 0;
+                for (let i = 0; i < boxesWithWidth.length; i += 1) {
+                    scene.fillRect(x, 0, boxesWithWidth[i].width, height);
+                    x = x + boxesWithWidth[i].width + gap;
+                }
+            }
+
             // drawBoxesProportionally();
+
+            function drawMultiDimensionalBoxesProportionally() {
+                // calculate gap for each row
+                // calculate total width for each row (gap in each row can be different, so is the total available width)
+                // for each row:
+                //      calculate how much px one point cost
+                //      for each item:
+                //          calculate it's width
+                // for each row:
+                //      calculate y
+                //      for each item:
+                //          calculate x
+                //          draw item at x, y, width, height
+
+                const gap = 30;
+                const height = 50;
+                const marginTop = 30;
+
+                const boxes = [
+                    [{columnRatio: 1}, {columnRatio: 2}, {columnRatio: 1}],
+                    [{columnRatio: 2}, {columnRatio: 1}, {columnRatio: 2}],
+                    [{columnRatio: 1}, {columnRatio: 1}, {columnRatio: 1}],
+                ]
+
+                const gapByRow = boxes.map((row) => {
+                    return gap * (row.length - 1);
+                });
+
+                const availableWidthByRow = gapByRow.map((gap) => {
+                    return canvas.width - gap;
+                });
+
+                const boxesWithWidth = boxes.map((row, index) => {
+                    const countRatio = row.reduce((sum, box) => {
+                        return sum + box.columnRatio;
+                    }, 0);
+
+                    const oneRatioCostInPixels = availableWidthByRow[index] / countRatio;
+
+                    return row.map((box) => {
+                        return {...box, width: box.columnRatio * oneRatioCostInPixels};
+                    });
+                });
+
+                for (let i = 0; i < boxesWithWidth.length; i += 1) {
+                    let x = 0;
+                    let y = i * height + (marginTop * i);
+                    for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
+                        scene.fillRect(x, y, boxesWithWidth[i][j].width, height);
+                        x = x + boxesWithWidth[i][j].width + gap;
+                    }
+                }
+
+            }
+
+            drawMultiDimensionalBoxesProportionally();
 
         }
 
