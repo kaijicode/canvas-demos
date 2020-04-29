@@ -1,15 +1,74 @@
 import { keyboard } from "./keyboard.js";
 
-const canvas = document.getElementById('canvas');
+const calcDimensions = (gapSize) => {
+    /**
+     * 30cm width
+        1.5cm = 5% of 30
+        2.1cm = 7% of 30
+        3cm = 10% of 30
+        3.5cm = 11.666% of 30
+        11.3cm = 37.66%
+        3mm spacing =
+            0.3 / 1.5 = 20% of 1.5, regular button
+            0.3 / 2.1 = 14.28% of 2.1,
+            0.3 / 30 = 1% of 30cm, total width
+            0.3 / 3.5 = 8.571% of 3.5
+     */
+    const calcSize = (physicalButtonSizeInCm) => 100 / (gapSize / physicalButtonSizeInCm * 100)
+
+    return {
+        // gap between the keys is 0.3mm
+        // entire keyboard layout is 30cm, 0.3mm is 1% of 30cm
+        width: gapSize * 100,
+        button: {
+            // regular key such as 'A'
+            // 1.5cm
+            // 0.3 / 1.5 = 20% of 1.5
+            base: calcSize(1.5),
+
+            // e.g 'Esc', 'Delete'
+            // 2.1cm
+            // 0.3 / 2.1 * 100 = 14.28%, 100 / 14.28 = 7
+            'base+': calcSize(2.1),
+
+            // 'Backspace', 'Caps Lock'
+            // 3cm
+            // 0.3 / 3 * 100 = 10%
+            '2xbase': calcSize(3),
+
+            // 'Enter'
+            // 3.5cm
+            // 0.3 / 3.5 * 100 = 8.571%, 100 / 8.571 = 11.666
+            '2xbase+': calcSize(3.5),
+
+            // 'L_Shift'
+            // 4.2cm
+            // 0.3 / 4.2 = 7.14%
+            large: calcSize(4.2),
+
+            // 'Spacebar'
+            // 11.3cm
+            // 0.3 / 11.3 = 2.65%
+            max: calcSize(11.3),
+        }
+    }
+}
+const dimensions = calcDimensions(8);
+
+function newCanvas(width, height) {
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('width', width);
+    canvas.setAttribute('height', height);
+    document.body.appendChild(canvas);
+    return canvas;
+}
+
+
+const canvas = newCanvas(dimensions.width, 400);
 const scene = canvas.getContext('2d');
 
-const isKeyPressed = keyboard();
+const keyPressedStatus = keyboard();
 
-
-// const {
-//     key: 'ESC',
-//     display: 'Escape'
-// }
 
 const char = (symbol, symbol2, align) => {
     return {
@@ -27,40 +86,6 @@ const chars = [
     [char('Shift'), char('Z')],
     [char('Ctrl'), char('Fn')]
 ];
-
-
-// const drawKey = (scene, key) => {
-//     scene.fillRect(0)
-// };
-
-
-// const key = (char, x = 0, y = 0, width = 0, height = 0, color = 'white') => {
-//     return {
-//         x,
-//         y,
-//         width,
-//         height,
-//         color,
-//         char,
-//
-//         setPosition(x, y) {
-//             this.x = x;
-//             this.y = y;
-//         },
-//
-//         setHeight(height) {
-//             this.height = height;
-//         },
-//
-//         getHeight() {
-//             return this.height;
-//         },
-//
-//         getWidth() {
-//             return this.width;
-//         }
-//     }
-// };
 
 const button = (key, box, backgroundColor) => {
     // {key, display, altKey, altKeyDisplay}
@@ -81,106 +106,112 @@ const getKeyRepresentation = (key, isShiftPressed) => {
     return key.display ? key.display : key.key;
 }
 
+// TODO: bug, if you press Shift+D and release it, the key rendered as pressed
+// TODO: and the other way around
+const isKeyPressed = (currentPressedKey, key) => {
+    return currentPressedKey[key.key] || currentPressedKey[key.altKey];
+}
+
 const keys = [
     [
-        button({key: 'ESC'}, {columnRatio: 2}),
-        button({key: 'F1'}, {columnRatio: 1}),
-        button({key: 'F2'}, {columnRatio: 1}),
-        button({key: 'F3'}, {columnRatio: 1}),
-        button({key: 'F4'}, {columnRatio: 1}),
-        button({key: 'F5'}, {columnRatio: 1}),
-        button({key: 'F6'}, {columnRatio: 1}),
-        button({key: 'F7'}, {columnRatio: 1}),
-        button({key: 'F8'}, {columnRatio: 1}),
-        button({key: 'F9'}, {columnRatio: 1}),
-        button({key: 'F10'}, {columnRatio: 1}),
-        button({key: 'F11'}, {columnRatio: 1}),
-        button({key: 'F12'}, {columnRatio: 1}),
-        button({key: 'Delete'}, {columnRatio: 2}),
-        button({key: 'Power'}, {columnRatio: 1}),
+        button({key: 'ESC'}, {columnRatio: dimensions.button['base+']}),
+        button({key: 'F1'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F2'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F3'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F4'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F5'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F6'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F7'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F8'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F9'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F10'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F11'}, {columnRatio: dimensions.button.base}),
+        button({key: 'F12'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Delete'}, {columnRatio: dimensions.button['base+']}),
+        button({key: '⦿'}, {columnRatio: dimensions.button.base}), // on/off
     ],
 
     [
-        button({key: '`', altKey: '~'}, {columnRatio: 1}),
-        button({key: '1', altKey: '!'}, {columnRatio: 1}),
-        button({key: '2', altKey: '@'}, {columnRatio: 1}),
-        button({key: '3', altKey: '#'}, {columnRatio: 1}),
-        button({key: '4', altKey: '$'}, {columnRatio: 1}),
-        button({key: '5', altKey: '%'}, {columnRatio: 1}),
-        button({key: '6', altKey: '^'}, {columnRatio: 1}),
-        button({key: '7', altKey: '&'}, {columnRatio: 1}),
-        button({key: '8', altKey: '*'}, {columnRatio: 1}),
-        button({key: '9', altKey: '('}, {columnRatio: 1}),
-        button({key: '0', altKey: ')'}, {columnRatio: 1}),
-        button({key: '-', altKey: '_'}, {columnRatio: 1}),
-        button({key: '=', altKey: '+'}, {columnRatio: 1}),
-        button({key: 'Backspace'}, {columnRatio: 2.5}),
-        button({key: 'Home'}, {columnRatio: 1}),
+        button({key: '`', altKey: '~'}, {columnRatio: dimensions.button.base}),
+        button({key: '1', altKey: '!'}, {columnRatio: dimensions.button.base}),
+        button({key: '2', altKey: '@'}, {columnRatio: dimensions.button.base}),
+        button({key: '3', altKey: '#'}, {columnRatio: dimensions.button.base}),
+        button({key: '4', altKey: '$'}, {columnRatio: dimensions.button.base}),
+        button({key: '5', altKey: '%'}, {columnRatio: dimensions.button.base}),
+        button({key: '6', altKey: '^'}, {columnRatio: dimensions.button.base}),
+        button({key: '7', altKey: '&'}, {columnRatio: dimensions.button.base}),
+        button({key: '8', altKey: '*'}, {columnRatio: dimensions.button.base}),
+        button({key: '9', altKey: '('}, {columnRatio: dimensions.button.base}),
+        button({key: '0', altKey: ')'}, {columnRatio: dimensions.button.base}),
+        button({key: '-', altKey: '_'}, {columnRatio: dimensions.button.base}),
+        button({key: '=', altKey: '+'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Backspace'}, {columnRatio: dimensions.button['2xbase']}),
+        button({key: 'Home'}, {columnRatio: dimensions.button.base}),
     ],
 
     [
-        button({key: 'Tab'}, {columnRatio: 2}),
-        button({key: 'q', altKey: 'Q'}, {columnRatio: 1}),
-        button({key: 'w', altKey: 'W'}, {columnRatio: 1}),
-        button({key: 'e', altKey: 'E'}, {columnRatio: 1}),
-        button({key: 'r', altKey: 'R'}, {columnRatio: 1}),
-        button({key: 't', altKey: 'T'}, {columnRatio: 1}),
-        button({key: 'y', altKey: 'Y'}, {columnRatio: 1}),
-        button({key: 'u', altKey: 'U'}, {columnRatio: 1}),
-        button({key: 'i', altKey: 'I'}, {columnRatio: 1}),
-        button({key: 'o', altKey: 'O'}, {columnRatio: 1}),
-        button({key: 'p', altKey: 'P'}, {columnRatio: 1}),
-        button({key: '[', altKey: '{'}, {columnRatio: 1}),
-        button({key: ']', altKey: '}'}, {columnRatio: 1}),
-        button({key: '\\', altKey: '|'}, {columnRatio: 2}),
-        button({key: 'End'}, {columnRatio: 1}),
+        button({key: 'Tab'}, {columnRatio: dimensions.button['base+']}),
+        button({key: 'q', altKey: 'Q'}, {columnRatio: dimensions.button.base}),
+        button({key: 'w', altKey: 'W'}, {columnRatio: dimensions.button.base}),
+        button({key: 'e', altKey: 'E'}, {columnRatio: dimensions.button.base}),
+        button({key: 'r', altKey: 'R'}, {columnRatio: dimensions.button.base}),
+        button({key: 't', altKey: 'T'}, {columnRatio: dimensions.button.base}),
+        button({key: 'y', altKey: 'Y'}, {columnRatio: dimensions.button.base}),
+        button({key: 'u', altKey: 'U'}, {columnRatio: dimensions.button.base}),
+        button({key: 'i', altKey: 'I'}, {columnRatio: dimensions.button.base}),
+        button({key: 'o', altKey: 'O'}, {columnRatio: dimensions.button.base}),
+        button({key: 'p', altKey: 'P'}, {columnRatio: dimensions.button.base}),
+        button({key: '[', altKey: '{'}, {columnRatio: dimensions.button.base}),
+        button({key: ']', altKey: '}'}, {columnRatio: dimensions.button.base}),
+        button({key: '\\', altKey: '|'}, {columnRatio: dimensions.button["base+"]}),
+        button({key: 'End'}, {columnRatio: dimensions.button.base}),
     ],
 
     [
-        button({key: 'Caps lock'}, {columnRatio: 2}),
-        button({key: 'a', altKey: 'A'}, {columnRatio: 1}),
-        button({key: 's', altKey: 'S'}, {columnRatio: 1}),
-        button({key: 'd', altKey: 'D'}, {columnRatio: 1}),
-        button({key: 'f', altKey: 'F'}, {columnRatio: 1}),
-        button({key: 'g', altKey: 'G'}, {columnRatio: 1}),
-        button({key: 'h', altKey: 'H'}, {columnRatio: 1}),
-        button({key: 'j', altKey: 'J'}, {columnRatio: 1}),
-        button({key: 'k', altKey: 'K'}, {columnRatio: 1}),
-        button({key: 'l', altKey: 'L'}, {columnRatio: 1}),
-        button({key: ';', altKey: ':'}, {columnRatio: 1}),
-        button({key: '\'', altKey: '"'}, {columnRatio: 1}),
-        button({key: 'Enter'}, {columnRatio: 3}),
-        button({key: 'PageUp', display: 'PgUp'}, {columnRatio: 1}),
+        button({key: 'Caps lock'}, {columnRatio: dimensions.button['2xbase+']}),
+        button({key: 'a', altKey: 'A'}, {columnRatio: dimensions.button.base}),
+        button({key: 's', altKey: 'S'}, {columnRatio: dimensions.button.base}),
+        button({key: 'd', altKey: 'D'}, {columnRatio: dimensions.button.base}),
+        button({key: 'f', altKey: 'F'}, {columnRatio: dimensions.button.base}),
+        button({key: 'g', altKey: 'G'}, {columnRatio: dimensions.button.base}),
+        button({key: 'h', altKey: 'H'}, {columnRatio: dimensions.button.base}),
+        button({key: 'j', altKey: 'J'}, {columnRatio: dimensions.button.base}),
+        button({key: 'k', altKey: 'K'}, {columnRatio: dimensions.button.base}),
+        button({key: 'l', altKey: 'L'}, {columnRatio: dimensions.button.base}),
+        button({key: ';', altKey: ':'}, {columnRatio: dimensions.button.base}),
+        button({key: '\'', altKey: '"'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Enter'}, {columnRatio: dimensions.button['2xbase+']}),
+        button({key: 'PageUp', display: 'PgUp'}, {columnRatio: dimensions.button.base}),
     ],
 
     [
-        button({key: 'Shift'}, {columnRatio: 3}),
-        button({key: 'z', altKey: 'Z'}, {columnRatio: 1}),
-        button({key: 'x', altKey: 'X'}, {columnRatio: 1}),
-        button({key: 'c', altKey: 'C'}, {columnRatio: 1}),
-        button({key: 'v', altKey: 'V'}, {columnRatio: 1}),
-        button({key: 'b', altKey: 'B'}, {columnRatio: 1}),
-        button({key: 'n', altKey: 'N'}, {columnRatio: 1}),
-        button({key: 'm', altKey: 'M'}, {columnRatio: 1}),
-        button({key: ',', altKey: '<'}, {columnRatio: 1}),
-        button({key: '.', altKey: '>'}, {columnRatio: 1}),
-        button({key: '/', altKey: '?'}, {columnRatio: 1}),
-        button({key: 'Shift'}, {columnRatio: 2}),
-        button({key: 'ArrowUp', display: 'Up'}, {columnRatio: 1}),
-        button({key: 'PageDown', display: 'PgDn'}, {columnRatio: 1}),
+        button({key: 'Shift'}, {columnRatio: dimensions.button.large}), // L_SHIFT
+        button({key: 'z', altKey: 'Z'}, {columnRatio: dimensions.button.base}),
+        button({key: 'x', altKey: 'X'}, {columnRatio: dimensions.button.base}),
+        button({key: 'c', altKey: 'C'}, {columnRatio: dimensions.button.base}),
+        button({key: 'v', altKey: 'V'}, {columnRatio: dimensions.button.base}),
+        button({key: 'b', altKey: 'B'}, {columnRatio: dimensions.button.base}),
+        button({key: 'n', altKey: 'N'}, {columnRatio: dimensions.button.base}),
+        button({key: 'm', altKey: 'M'}, {columnRatio: dimensions.button.base}),
+        button({key: ',', altKey: '<'}, {columnRatio: dimensions.button.base}),
+        button({key: '.', altKey: '>'}, {columnRatio: dimensions.button.base}),
+        button({key: '/', altKey: '?'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Shift'}, {columnRatio: dimensions.button['base+']}), // R_SHIFT
+        button({key: 'ArrowUp', display: '▲'}, {columnRatio: dimensions.button.base}),
+        button({key: 'PageDown', display: 'PgDn'}, {columnRatio: dimensions.button.base}),
     ],
 
     [
-        button({key: 'Control', display: 'Ctrl'}, {columnRatio: 2}),
-        button({key: 'Fn'}, {columnRatio: 1}),
-        button({key: 'Win'}, {columnRatio: 1}),
-        button({key: 'Alt'}, {columnRatio: 1}),
-        button({key: '', display: 'Spacebar'}, {columnRatio: 5.5}),
-        button({key: 'Alt'}, {columnRatio: 1}),
-        button({key: 'Control', display: 'Ctrl'}, {columnRatio: 2}),
-        button({key: 'ArrowLeft', display: 'Left'}, {columnRatio: 1}),
-        button({key: 'ArrowDown', display: 'Down'}, {columnRatio: 1}),
-        button({key: 'ArrowRight', display: 'Right'}, {columnRatio: 1}),
+        button({key: 'Control', display: 'Ctrl'}, {columnRatio: dimensions.button["base+"]}), // L_CONTROL
+        button({key: 'Fn'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Win'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Alt'}, {columnRatio: dimensions.button.base}),
+        button({key: ' ', display: 'Spacebar'}, {columnRatio: dimensions.button.max}),
+        button({key: 'Alt'}, {columnRatio: dimensions.button.base}),
+        button({key: 'Control', display: 'Ctrl'}, {columnRatio: dimensions.button["base+"]}), // R_CONTROL
+        button({key: 'ArrowLeft', display: '◀'}, {columnRatio: dimensions.button.base}),
+        button({key: 'ArrowDown', display: '▼'}, {columnRatio: dimensions.button.base}),
+        button({key: 'ArrowRight', display: '▶'}, {columnRatio: dimensions.button.base}),
     ],
 ]
 
@@ -372,10 +403,10 @@ function draw() {
             let x = 0;
             let y = i * height + (marginTop * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
-                scene.fillStyle = 'orange'
+                scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ? 'orange' : 'white';
                 scene.fillRect(x, y, boxesWithWidth[i][j].width, height);
 
-                const symbol = getKeyRepresentation(boxesWithWidth[i][j], isKeyPressed['Shift']);
+                const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
 
                 const box = {
                     x, y, // top-left
