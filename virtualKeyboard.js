@@ -365,11 +365,11 @@ function draw() {
     // drawMultiDimensionalBoxesProportionally();
 
 
-    function placeText(scene, box, text) {
+    function placeText(scene, box, text, color) {
         // x, y, width, height is the box
         const fontHeight = 8;
         scene.font = '8px monospace';
-        scene.fillStyle = 'black'
+        scene.fillStyle = color;
         const metrics = scene.measureText(text);
         scene.fillText(text, (box.x + box.x2) / 2 - (metrics.width / 2), (box.y + box.y4) / 2 + (fontHeight / 2));
     }
@@ -378,6 +378,9 @@ function draw() {
         const gap = 15;
         const height = 25;
         const marginTop = 15;
+        const buttonBackground = '#000000'
+        const buttonBackgroundPressed = '#00C853';
+        const textColor = '#ffffff';
 
         const gapByRow = keys.map((row) => {
             return gap * (row.length - 1);
@@ -403,7 +406,10 @@ function draw() {
             let x = 0;
             let y = i * height + (marginTop * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
-                scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ? 'orange' : 'white';
+                scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
+                    buttonBackgroundPressed :
+                    buttonBackground;
+
                 scene.fillRect(x, y, boxesWithWidth[i][j].width, height);
 
                 const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
@@ -414,7 +420,7 @@ function draw() {
                     x3: x, y3: y + height, // bottom-left
                     x4: x + boxesWithWidth[i][j].width, y4: y + height// bottom-right
                 };
-                placeText(scene, box, symbol);
+                placeText(scene, box, symbol, textColor);
 
                 x = x + boxesWithWidth[i][j].width + gap;
             }
