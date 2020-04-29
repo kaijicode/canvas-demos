@@ -1,4 +1,6 @@
 import { keyboard } from "./keyboard.js";
+import {MousePositionReporter} from "./mousePositionReporter";
+import {clearScene} from "./canvas";
 
 // TODO: it would be cool if I could play with the config in live
 const config = {
@@ -308,10 +310,14 @@ const keys = [
     ],
 ]
 
+const mousePositionReporter = new MousePositionReporter(canvas, 10, 'red');
+
 function draw() {
     requestAnimationFrame(draw);
+    clearScene(scene, canvas);
 
     drawKeyboard(scene, config, canvas.width, canvas.height, keys);
+    mousePositionReporter.draw(scene);
 }
 
 draw();
