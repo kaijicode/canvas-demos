@@ -2,6 +2,7 @@ import { keyboard } from "./keyboard.js";
 import {MousePositionReporter} from "./mousePositionReporter";
 import {clearScene} from "./canvas";
 
+// TODO: Mouse interaction
 // TODO: it would be cool if I could play with the config in live
 const config = {
     canvas: {
@@ -11,7 +12,7 @@ const config = {
     font: {
         family: 'monospace',
         size: '8px',
-        color: '#ffffff',
+        color: '#000000',
         height: 8, // TODO: is there a way to calculate how much given font family and font size take in height?
     },
 
@@ -91,12 +92,12 @@ function calcDimensions(gapSize) {
             // regular key such as 'A'
             // 1.5cm
             // 0.3 / 1.5 = 20% of 1.5
-            base: calcRatio(1.5),
+            base: calcRatio(1.6),
 
             // e.g 'Esc', 'Delete'
             // 2.1cm
             // 0.3 / 2.1 * 100 = 14.28%, 100 / 14.28 = 7
-            'base+': calcRatio(2.1),
+            'base+': calcRatio(2.3),
 
             // 'Backspace', 'Caps Lock'
             // 3cm
@@ -106,7 +107,7 @@ function calcDimensions(gapSize) {
             // 'Enter'
             // 3.5cm
             // 0.3 / 3.5 * 100 = 8.571%, 100 / 8.571 = 11.666
-            '2x-base+': calcRatio(3.5),
+            '2x-base+': calcRatio(3.6),
 
             // 'L_Shift'
             // 4.2cm
@@ -116,13 +117,12 @@ function calcDimensions(gapSize) {
             // 'Spacebar'
             // 11.3cm
             // 0.3 / 11.3 = 2.65%
-            max: calcRatio(11.3),
+            max: calcRatio(11.1),
         },
         buttonHeight,
     }
 }
 
-// TODO: text is not aligned
 function button(key, box, backgroundColor) {
     return {
         ...key,
@@ -179,11 +179,11 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
             let x = 0;
             let y = i * dimensions.buttonHeight + (dimensions.gapSize * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
-                scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
+                scene.strokeStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
                     config.keyboard.buttonBackgroundPressed :
                     config.keyboard.buttonBackground;
 
-                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.buttonHeight);
+                scene.strokeRect(x, y, boxesWithWidth[i][j].width, dimensions.buttonHeight);
 
                 const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
 
@@ -263,7 +263,7 @@ const keys = [
     ],
 
     [
-        button({key: 'Caps lock'}, {widthRatio: dimensions.button['2x-base+']}),
+        button({key: 'Caps lock'}, {widthRatio: dimensions.button['2x-base']}),
         button({key: 'a', altKey: 'A'}, {widthRatio: dimensions.button.base}),
         button({key: 's', altKey: 'S'}, {widthRatio: dimensions.button.base}),
         button({key: 'd', altKey: 'D'}, {widthRatio: dimensions.button.base}),
