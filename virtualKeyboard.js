@@ -3,6 +3,8 @@ import {MousePositionReporter} from "./mousePositionReporter";
 import {clearScene} from "./canvas";
 
 // TODO: Mouse interaction
+// TODO: Add option to use strokeRect
+        // note that, the border adds to the dimensions extra px
 // TODO: it would be cool if I could play with the config in live
 const config = {
     canvas: {
@@ -12,31 +14,38 @@ const config = {
     font: {
         family: 'monospace',
         size: '8px',
-        color: '#000000',
+        color: '#ffffff',
         height: 8, // TODO: is there a way to calculate how much given font family and font size take in height?
     },
 
     keyboard: {
-        gapSize: 8,
-        rows: 6,
+        gap: 8,
         buttonHeight: 25,
         buttonBackground: '#000000',
         buttonBackgroundPressed: '#00C853',
     },
 
     // in cm
-    physicalKeyboardDimensions: {
-        // mm
-        gap: 0.3,
+    physicalKeyboardModel: {
+        rows: 6,
+        width: 30.3,
+        height: 10.3,
+        gap: 0.3, // mm
 
-        // cm
         button: {
-            base: 1.5,
-            'base+': 2.1,
-            '2x-base': 3,
-            '2x-base+': 3.5,
-            large: 4.2,
-            max: 11.3,
+            width: {
+                size1: 1.6,
+                size2: 2.3,
+                size3: 3,
+                size4: 3.6,
+                size5: 4.2,
+                size6: 11.1,
+            },
+
+            height: {
+                size1: 1,
+                size2: 1.5
+            },
         }
     }
 };
@@ -50,74 +59,31 @@ function newCanvas(width, height, background) {
     return canvas;
 }
 
-/**
- * Calculate button ratios based on real button sizes.
- * gap between any two keys on the keyboard -> 0.3mm
- * keyboard width -> 30cm
- * button sizes:
- *      -> 1.5cm ()
- *          -> 0.3 / 1.5 * 100 = 0.3 is 20% of 1.5, 100 / 20 = 5
- *      -> 2.1cm
- *      -> 3cm
- *      -> 11.3cm
-*
- * @param gapSize
- * @returns {{button: {large: *, max: *, "base+": *, "2xbase+": *, "2xbase": *, base: *}, buttonHeight: number, width: number, gapSize: *, height: number}}
- */
-function calcDimensions(gapSize) {
-    /**
-     * 30cm width
-        1.5cm = 5% of 30
-        2.1cm = 7% of 30
-        3cm = 10% of 30
-        3.5cm = 11.666% of 30
-        11.3cm = 37.66%
-        3mm spacing =
-            0.3 / 1.5 = 20% of 1.5, regular button
-            0.3 / 2.1 = 14.28% of 2.1,
-            0.3 / 30 = 1% of 30cm, total width
-            0.3 / 3.5 = 8.571% of 3.5
-     */
-    const calcRatio = (physicalButtonSizeInCm) => 100 / (gapSize / physicalButtonSizeInCm * 100)
 
+function calcDimensions(config) {
+    const physical = config.physicalKeyboardModel;
+
+    // - gap is the smallest possible unit
+    // - all button size are calculates based on gap and the assumption that total keyboard width is gap * 100
+    // - ratio calculation:
+    //      - standard key width such as 'A' is 1.5cm.
+    //      - given the gap of 0.3 (3mm): 1.5 / (0.3 * 100) * 100 = key is 5% of the entire keyboard width
+    const width = config.keyboard.gap * 100
+    const toRatio = (physicalButtonSizeInCm) => physicalButtonSizeInCm / width * 100
+
+    // TODO: Move to config
     const buttonHeight = 25;
-    const rows = 6;
     return {
-        // gap between the keys is 0.3mm
-        // entire keyboard layout is 30cm, 0.3mm is 1% of 30cm
-        gapSize,
-        width: gapSize * 100,
-        height: buttonHeight * rows + ((rows - 1) * gapSize),// 6 rows
+        gap: config.keyboard.gap,
+        width, // i.e, assume gap size is 1% of keyboard width
+        height: buttonHeight * physical.rows + ((physical.rows - 1) * config.keyboard.gap),
         button: {
-            // regular key such as 'A'
-            // 1.5cm
-            // 0.3 / 1.5 = 20% of 1.5
-            base: calcRatio(1.6),
-
-            // e.g 'Esc', 'Delete'
-            // 2.1cm
-            // 0.3 / 2.1 * 100 = 14.28%, 100 / 14.28 = 7
-            'base+': calcRatio(2.3),
-
-            // 'Backspace', 'Caps Lock'
-            // 3cm
-            // 0.3 / 3 * 100 = 10%
-            '2x-base': calcRatio(3),
-
-            // 'Enter'
-            // 3.5cm
-            // 0.3 / 3.5 * 100 = 8.571%, 100 / 8.571 = 11.666
-            '2x-base+': calcRatio(3.6),
-
-            // 'L_Shift'
-            // 4.2cm
-            // 0.3 / 4.2 = 7.14%
-            large: calcRatio(4.2),
-
-            // 'Spacebar'
-            // 11.3cm
-            // 0.3 / 11.3 = 2.65%
-            max: calcRatio(11.1),
+            base: toRatio(1.6),
+            'base+': toRatio(2.3),
+            '2x-base': toRatio(3),
+            '2x-base+': toRatio(3.6),
+            large: toRatio(4.2),
+            max: toRatio(11.1),
         },
         buttonHeight,
     }
@@ -155,10 +121,12 @@ function placeText(scene, box, font, text) {
 }
 
 function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
+        // calculate total gap used by each row
         const gapByRow = keys.map((row) => {
-            return dimensions.gapSize * (row.length - 1);
+            return dimensions.gap * (row.length - 1);
         });
 
+        // calculate available width per row
         const availableWidthByRow = gapByRow.map((gap) => {
             return canvas.width - gap;
         });
@@ -177,13 +145,13 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
 
         for (let i = 0; i < boxesWithWidth.length; i += 1) {
             let x = 0;
-            let y = i * dimensions.buttonHeight + (dimensions.gapSize * i);
+            let y = i * dimensions.buttonHeight + (dimensions.gap * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
-                scene.strokeStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
+                scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
                     config.keyboard.buttonBackgroundPressed :
                     config.keyboard.buttonBackground;
 
-                scene.strokeRect(x, y, boxesWithWidth[i][j].width, dimensions.buttonHeight);
+                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.buttonHeight);
 
                 const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
 
@@ -196,14 +164,14 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
 
                 placeText(scene, box, config.font,  symbol);
 
-                x = x + boxesWithWidth[i][j].width + dimensions.gapSize;
+                x = x + boxesWithWidth[i][j].width + dimensions.gap;
             }
         }
 
     }
 
 
-const dimensions = calcDimensions(config.keyboard.gapSize);
+const dimensions = calcDimensions(config);
 const canvas = newCanvas(dimensions.width, dimensions.height, config.canvas.background);
 const scene = canvas.getContext('2d');
 const keyPressedStatus = keyboard();
