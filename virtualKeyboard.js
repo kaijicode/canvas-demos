@@ -20,9 +20,13 @@ const config = {
 
     keyboard: {
         gap: 8,
-        buttonHeight: 25,
-        buttonBackground: '#000000',
-        buttonBackgroundPressed: '#00C853',
+        button: {
+            height: {
+                size1: 25,
+            },
+            background: '#000000',
+            backgroundPressed: '#00C853',
+        }
     },
 
     // in cm
@@ -71,21 +75,24 @@ function calcDimensions(config) {
     const width = config.keyboard.gap * 100
     const toRatio = (physicalButtonSizeInCm) => physicalButtonSizeInCm / width * 100
 
-    // TODO: Move to config
-    const buttonHeight = 25;
     return {
         gap: config.keyboard.gap,
         width, // i.e, assume gap size is 1% of keyboard width
-        height: buttonHeight * physical.rows + ((physical.rows - 1) * config.keyboard.gap),
+        height: config.keyboard.button.height.size1 * physical.rows + ((physical.rows - 1) * config.keyboard.gap),
         button: {
-            base: toRatio(1.6),
-            'base+': toRatio(2.3),
-            '2x-base': toRatio(3),
-            '2x-base+': toRatio(3.6),
-            large: toRatio(4.2),
-            max: toRatio(11.1),
+            width: {
+                size1: toRatio(config.physicalKeyboardModel.button.width.size1),
+                size2: toRatio(config.physicalKeyboardModel.button.width.size2),
+                size3: toRatio(config.physicalKeyboardModel.button.width.size3),
+                size4: toRatio(config.physicalKeyboardModel.button.width.size4),
+                size5: toRatio(config.physicalKeyboardModel.button.width.size5),
+                size6: toRatio(config.physicalKeyboardModel.button.width.size6),
+            },
+
+            height: {
+                size1: config.keyboard.button.height.size1,
+            }
         },
-        buttonHeight,
     }
 }
 
@@ -145,21 +152,21 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
 
         for (let i = 0; i < boxesWithWidth.length; i += 1) {
             let x = 0;
-            let y = i * dimensions.buttonHeight + (dimensions.gap * i);
+            let y = i * dimensions.button.height.size1 + (dimensions.gap * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
                 scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
-                    config.keyboard.buttonBackgroundPressed :
-                    config.keyboard.buttonBackground;
+                    config.keyboard.button.backgroundPressed :
+                    config.keyboard.button.background;
 
-                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.buttonHeight);
+                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.button.height.size1);
 
                 const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
 
                 const box = {
                     x, y, // top-left
                     x2: x + boxesWithWidth[i][j].width, y2: y, // top-right
-                    x3: x, y3: y + dimensions.buttonHeight, // bottom-left
-                    x4: x + boxesWithWidth[i][j].width, y4: y + dimensions.buttonHeight// bottom-right
+                    x3: x, y3: y + dimensions.button.height.size1, // bottom-left
+                    x4: x + boxesWithWidth[i][j].width, y4: y + dimensions.button.height.size1 // bottom-right
                 };
 
                 placeText(scene, box, config.font,  symbol);
@@ -177,104 +184,104 @@ const scene = canvas.getContext('2d');
 const keyPressedStatus = keyboard();
 const keys = [
     [
-        button({key: 'ESC'}, {widthRatio: dimensions.button['base+']}),
-        button({key: 'F1'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F2'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F3'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F4'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F5'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F6'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F7'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F8'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F9'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F10'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F11'}, {widthRatio: dimensions.button.base}),
-        button({key: 'F12'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Delete'}, {widthRatio: dimensions.button['base+']}),
-        button({key: '⦿'}, {widthRatio: dimensions.button.base}), // on/off
+        button({key: 'ESC'}, {widthRatio: dimensions.button.width.size2}),
+        button({key: 'F1'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F2'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F3'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F4'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F5'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F6'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F7'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F8'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F9'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F10'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F11'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'F12'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Delete'}, {widthRatio: dimensions.button.width.size2}),
+        button({key: '⦿'}, {widthRatio: dimensions.button.width.size1}), // on/off
     ],
 
     [
-        button({key: '`', altKey: '~'}, {widthRatio: dimensions.button.base}),
-        button({key: '1', altKey: '!'}, {widthRatio: dimensions.button.base}),
-        button({key: '2', altKey: '@'}, {widthRatio: dimensions.button.base}),
-        button({key: '3', altKey: '#'}, {widthRatio: dimensions.button.base}),
-        button({key: '4', altKey: '$'}, {widthRatio: dimensions.button.base}),
-        button({key: '5', altKey: '%'}, {widthRatio: dimensions.button.base}),
-        button({key: '6', altKey: '^'}, {widthRatio: dimensions.button.base}),
-        button({key: '7', altKey: '&'}, {widthRatio: dimensions.button.base}),
-        button({key: '8', altKey: '*'}, {widthRatio: dimensions.button.base}),
-        button({key: '9', altKey: '('}, {widthRatio: dimensions.button.base}),
-        button({key: '0', altKey: ')'}, {widthRatio: dimensions.button.base}),
-        button({key: '-', altKey: '_'}, {widthRatio: dimensions.button.base}),
-        button({key: '=', altKey: '+'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Backspace'}, {widthRatio: dimensions.button['2x-base']}),
-        button({key: 'Home'}, {widthRatio: dimensions.button.base}),
+        button({key: '`', altKey: '~'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '1', altKey: '!'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '2', altKey: '@'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '3', altKey: '#'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '4', altKey: '$'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '5', altKey: '%'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '6', altKey: '^'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '7', altKey: '&'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '8', altKey: '*'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '9', altKey: '('}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '0', altKey: ')'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '-', altKey: '_'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '=', altKey: '+'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Backspace'}, {widthRatio: dimensions.button.width.size3}),
+        button({key: 'Home'}, {widthRatio: dimensions.button.width.size1}),
     ],
 
     [
-        button({key: 'Tab'}, {widthRatio: dimensions.button['base+']}),
-        button({key: 'q', altKey: 'Q'}, {widthRatio: dimensions.button.base}),
-        button({key: 'w', altKey: 'W'}, {widthRatio: dimensions.button.base}),
-        button({key: 'e', altKey: 'E'}, {widthRatio: dimensions.button.base}),
-        button({key: 'r', altKey: 'R'}, {widthRatio: dimensions.button.base}),
-        button({key: 't', altKey: 'T'}, {widthRatio: dimensions.button.base}),
-        button({key: 'y', altKey: 'Y'}, {widthRatio: dimensions.button.base}),
-        button({key: 'u', altKey: 'U'}, {widthRatio: dimensions.button.base}),
-        button({key: 'i', altKey: 'I'}, {widthRatio: dimensions.button.base}),
-        button({key: 'o', altKey: 'O'}, {widthRatio: dimensions.button.base}),
-        button({key: 'p', altKey: 'P'}, {widthRatio: dimensions.button.base}),
-        button({key: '[', altKey: '{'}, {widthRatio: dimensions.button.base}),
-        button({key: ']', altKey: '}'}, {widthRatio: dimensions.button.base}),
-        button({key: '\\', altKey: '|'}, {widthRatio: dimensions.button["base+"]}),
-        button({key: 'End'}, {widthRatio: dimensions.button.base}),
+        button({key: 'Tab'}, {widthRatio: dimensions.button.width.size2}),
+        button({key: 'q', altKey: 'Q'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'w', altKey: 'W'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'e', altKey: 'E'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'r', altKey: 'R'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 't', altKey: 'T'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'y', altKey: 'Y'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'u', altKey: 'U'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'i', altKey: 'I'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'o', altKey: 'O'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'p', altKey: 'P'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '[', altKey: '{'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: ']', altKey: '}'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '\\', altKey: '|'}, {widthRatio: dimensions.button.width.size2}),
+        button({key: 'End'}, {widthRatio: dimensions.button.width.size1}),
     ],
 
     [
-        button({key: 'Caps lock'}, {widthRatio: dimensions.button['2x-base']}),
-        button({key: 'a', altKey: 'A'}, {widthRatio: dimensions.button.base}),
-        button({key: 's', altKey: 'S'}, {widthRatio: dimensions.button.base}),
-        button({key: 'd', altKey: 'D'}, {widthRatio: dimensions.button.base}),
-        button({key: 'f', altKey: 'F'}, {widthRatio: dimensions.button.base}),
-        button({key: 'g', altKey: 'G'}, {widthRatio: dimensions.button.base}),
-        button({key: 'h', altKey: 'H'}, {widthRatio: dimensions.button.base}),
-        button({key: 'j', altKey: 'J'}, {widthRatio: dimensions.button.base}),
-        button({key: 'k', altKey: 'K'}, {widthRatio: dimensions.button.base}),
-        button({key: 'l', altKey: 'L'}, {widthRatio: dimensions.button.base}),
-        button({key: ';', altKey: ':'}, {widthRatio: dimensions.button.base}),
-        button({key: '\'', altKey: '"'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Enter'}, {widthRatio: dimensions.button['2x-base+']}),
-        button({key: 'PageUp', display: 'PgUp'}, {widthRatio: dimensions.button.base}),
+        button({key: 'Caps lock'}, {widthRatio: dimensions.button.width.size3}),
+        button({key: 'a', altKey: 'A'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 's', altKey: 'S'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'd', altKey: 'D'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'f', altKey: 'F'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'g', altKey: 'G'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'h', altKey: 'H'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'j', altKey: 'J'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'k', altKey: 'K'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'l', altKey: 'L'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: ';', altKey: ':'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '\'', altKey: '"'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Enter'}, {widthRatio: dimensions.button.width.size4}),
+        button({key: 'PageUp', display: 'PgUp'}, {widthRatio: dimensions.button.width.size1}),
     ],
 
     [
-        button({key: 'Shift'}, {widthRatio: dimensions.button.large}), // L_SHIFT
-        button({key: 'z', altKey: 'Z'}, {widthRatio: dimensions.button.base}),
-        button({key: 'x', altKey: 'X'}, {widthRatio: dimensions.button.base}),
-        button({key: 'c', altKey: 'C'}, {widthRatio: dimensions.button.base}),
-        button({key: 'v', altKey: 'V'}, {widthRatio: dimensions.button.base}),
-        button({key: 'b', altKey: 'B'}, {widthRatio: dimensions.button.base}),
-        button({key: 'n', altKey: 'N'}, {widthRatio: dimensions.button.base}),
-        button({key: 'm', altKey: 'M'}, {widthRatio: dimensions.button.base}),
-        button({key: ',', altKey: '<'}, {widthRatio: dimensions.button.base}),
-        button({key: '.', altKey: '>'}, {widthRatio: dimensions.button.base}),
-        button({key: '/', altKey: '?'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Shift'}, {widthRatio: dimensions.button['base+']}), // R_SHIFT
-        button({key: 'ArrowUp', display: '▲'}, {widthRatio: dimensions.button.base}),
-        button({key: 'PageDown', display: 'PgDn'}, {widthRatio: dimensions.button.base}),
+        button({key: 'Shift'}, {widthRatio: dimensions.button.width.size5}), // L_SHIFT
+        button({key: 'z', altKey: 'Z'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'x', altKey: 'X'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'c', altKey: 'C'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'v', altKey: 'V'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'b', altKey: 'B'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'n', altKey: 'N'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'm', altKey: 'M'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: ',', altKey: '<'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '.', altKey: '>'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: '/', altKey: '?'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Shift'}, {widthRatio: dimensions.button.width.size2}), // R_SHIFT
+        button({key: 'ArrowUp', display: '▲'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'PageDown', display: 'PgDn'}, {widthRatio: dimensions.button.width.size1}),
     ],
 
     [
-        button({key: 'Control', display: 'Ctrl'}, {widthRatio: dimensions.button["base+"]}), // L_CONTROL
-        button({key: 'Fn'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Win'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Alt'}, {widthRatio: dimensions.button.base}),
-        button({key: ' ', display: 'Spacebar'}, {widthRatio: dimensions.button.max}),
-        button({key: 'Alt'}, {widthRatio: dimensions.button.base}),
-        button({key: 'Control', display: 'Ctrl'}, {widthRatio: dimensions.button["base+"]}), // R_CONTROL
-        button({key: 'ArrowLeft', display: '◀'}, {widthRatio: dimensions.button.base}),
-        button({key: 'ArrowDown', display: '▼'}, {widthRatio: dimensions.button.base}),
-        button({key: 'ArrowRight', display: '▶'}, {widthRatio: dimensions.button.base}),
+        button({key: 'Control', display: 'Ctrl'}, {widthRatio: dimensions.button.width.size2}), // L_CONTROL
+        button({key: 'Fn'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Win'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Alt'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: ' ', display: 'Spacebar'}, {widthRatio: dimensions.button.width.size6}),
+        button({key: 'Alt'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'Control', display: 'Ctrl'}, {widthRatio: dimensions.button.width.size2}), // R_CONTROL
+        button({key: 'ArrowLeft', display: '◀'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'ArrowDown', display: '▼'}, {widthRatio: dimensions.button.width.size1}),
+        button({key: 'ArrowRight', display: '▶'}, {widthRatio: dimensions.button.width.size1}),
     ],
 ]
 
