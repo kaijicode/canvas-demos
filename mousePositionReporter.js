@@ -1,6 +1,4 @@
-import {newCanvas, clearScene} from "./canvas";
-
-// const { canvas, scene } = newCanvas(500, 380, '#e2e2e2');
+import { line } from "./primitives";
 
 // TODO: Would be cool if the output could be redirected to a different canvas
 export class MousePositionReporter {
@@ -27,6 +25,51 @@ export class MousePositionReporter {
 
     destroy() {
         this.canvas.removeEventListener('mousemove', this.listener);
+    }
+}
+
+export class Ruler {
+    constructor(mouseX, mouseY, color) {
+        this.mouseX = mouseX;
+        this.mouseY = mouseY;
+        this.x1 = 0;
+        this.y1 = 0;
+        this.x2 = 0;
+        this.y2 = 0;
+        this.color = color;
+    }
+
+    draw(scene) {
+        line(scene, this.x1, this.y1, this.x2, this.y2, this.color);
+    }
+}
+
+
+export class HorizontalRuler extends Ruler {
+    constructor(mouseX, mouseY, color) {
+        super(mouseX, mouseY, color);
+        this.update(mouseX, mouseY);
+    }
+
+    update(mouseX, mouseY) {
+        this.x1 = 0;
+        this.y1 = mouseY;
+        this.x2 = mouseX;
+        this.y2 = mouseY;
+    }
+}
+
+export class VerticalRuler extends Ruler {
+    constructor(mouseX, mouseY, color) {
+        super(mouseX, mouseY, color);
+        this.update(mouseX, mouseY);
+    }
+
+    update(mouseX, mouseY) {
+        this.x1 = mouseX;
+        this.y1 = 0;
+        this.x2 = mouseX;
+        this.y2 = mouseY;
     }
 }
 

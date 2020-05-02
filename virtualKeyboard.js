@@ -1,5 +1,5 @@
 import { keyboard } from "./keyboard.js";
-import {MousePositionReporter} from "./mousePositionReporter";
+import {HorizontalRuler, MousePositionReporter, VerticalRuler} from "./mousePositionReporter";
 import {clearScene} from "./canvas";
 
 // TODO: Mouse interaction
@@ -286,6 +286,10 @@ const keys = [
 ]
 
 const mousePositionReporter = new MousePositionReporter(canvas, 10, 'red');
+const rulers = [
+    new HorizontalRuler(0, 0, 'red'),
+    new VerticalRuler(0, 0, 'green')
+];
 
 function draw() {
     requestAnimationFrame(draw);
@@ -293,6 +297,11 @@ function draw() {
 
     drawKeyboard(scene, config, canvas.width, canvas.height, keys);
     mousePositionReporter.draw(scene);
+
+    for (const ruler of rulers) {
+        ruler.update(mousePositionReporter.x, mousePositionReporter.y);
+        ruler.draw(scene);
+    }
 }
 
 draw();
