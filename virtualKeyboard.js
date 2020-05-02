@@ -22,12 +22,9 @@ const config = {
     oneCmInPixels: 25,
 
     keyboard: {
-        size: 8,
+        size: 12,
 
         button: {
-            height: {
-                size1: 25,
-            },
             background: '#000000',
             backgroundPressed: '#00C853',
         }
@@ -37,8 +34,7 @@ const config = {
     physicalKeyboardModel: {
         gap: 0.3, // gap between any two adjacent keys on the keyboard (in mm)
         width: 30.3,
-        height: 10.3,
-        rows: 6,
+        height: 10.5,
 
         button: {
             width: {
