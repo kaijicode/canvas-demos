@@ -29,25 +29,24 @@ export class MousePositionReporter {
 }
 
 export class Ruler {
-    constructor(mouseX, mouseY, color) {
-        this.mouseX = mouseX;
-        this.mouseY = mouseY;
-        this.x1 = 0;
-        this.y1 = 0;
+    constructor(mouseX, mouseY, width, color) {
+        this.x1 = mouseX;
+        this.y1 = mouseY;
         this.x2 = 0;
         this.y2 = 0;
         this.color = color;
+        this.width = width;
     }
 
     draw(scene) {
-        line(scene, this.x1, this.y1, this.x2, this.y2, this.color);
+        line(scene, this.x1, this.y1, this.x2, this.y2, this.width, this.color);
     }
 }
 
 
 export class HorizontalRuler extends Ruler {
-    constructor(mouseX, mouseY, color) {
-        super(mouseX, mouseY, color);
+    constructor(mouseX, mouseY, width, color) {
+        super(mouseX, mouseY, width, color);
         this.update(mouseX, mouseY);
     }
 
@@ -60,8 +59,8 @@ export class HorizontalRuler extends Ruler {
 }
 
 export class VerticalRuler extends Ruler {
-    constructor(mouseX, mouseY, color) {
-        super(mouseX, mouseY, color);
+    constructor(mouseX, mouseY, width, color) {
+        super(mouseX, mouseY, width, color);
         this.update(mouseX, mouseY);
     }
 

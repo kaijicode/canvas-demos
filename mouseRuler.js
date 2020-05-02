@@ -32,7 +32,7 @@ function createVerticalRuler(mouseX, mouseY, color) {
 }
 
 function drawRuler(scene, ruler) {
-    line(scene, ruler.x1, ruler.y1, ruler.x2, ruler.y2, ruler.color);
+    line(scene, ruler.x1, ruler.y1, ruler.x2, ruler.y2, 1, ruler.color);
 }
 
 function drawLabel(scene, ruler, color, fontSize, position) {

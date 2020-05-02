@@ -48,13 +48,13 @@
             // columns
             let x = gap;
             for (let i = 1; i < Math.round(canvasWidth / gap); i += 1) {
-                line(scene, x * i, 0, x * i, canvasHeight, color);
+                line(scene, x * i, 0, x * i, canvasHeight, 1, color);
             }
 
             // rows
             let y = gap;
             for (let i = 1; i < Math.round(canvasHeight / gap); i += 1) {
-                line(scene, 0, y * i, canvasWidth, y * i, color);
+                line(scene, 0, y * i, canvasWidth, y * i, 1, color);
             }
         };
         
@@ -67,7 +67,7 @@
 
             grid(scene, canvas.width, canvas.height, 10, '#e2e2e2');
 
-            line(scene, 0, 10, 390, 10, 'blue');
+            line(scene, 0, 10, 390, 10, 1, 'blue');
         }
 
         draw();
