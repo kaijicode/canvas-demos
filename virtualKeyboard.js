@@ -6,6 +6,7 @@ import {clearScene} from "./canvas";
 // TODO: Add option to use strokeRect
         // note that, the border adds to the dimensions extra px
 // TODO: it would be cool if I could play with the config in live
+// TODO: last row is being cut (should be 38px instead of 33px)
 const config = {
     canvas: {
         background: '#ffffff',
@@ -18,8 +19,17 @@ const config = {
         height: 8, // TODO: is there a way to calculate how much given font family and font size take in height?
     },
 
+    oneCmInPixels: 25,
+
     keyboard: {
-        gap: 8,
+        gap: 8, // 1cm = 8px
+
+        cm: 1, // 1cm size in pixels
+        units: 8, // 1cm to
+        pixels: 8,
+        size: 8,
+        oneCmInPixels: 8, // oneCmSize equals to x pixels
+
         button: {
             height: {
                 size1: 25,
@@ -31,10 +41,10 @@ const config = {
 
     // in cm
     physicalKeyboardModel: {
-        rows: 6,
+        gap: 0.3, // gap between any two adjacent keys on the keyboard (in mm)
         width: 30.3,
         height: 10.3,
-        gap: 0.3, // mm
+        rows: 6,
 
         button: {
             width: {
@@ -63,34 +73,31 @@ function newCanvas(width, height, background) {
     return canvas;
 }
 
-
+// calculate dimensions in pixels
 function calcDimensions(config) {
     const physical = config.physicalKeyboardModel;
 
-    // - gap is the smallest possible unit
-    // - all button size are calculates based on gap and the assumption that total keyboard width is gap * 100
-    // - ratio calculation:
-    //      - standard key width such as 'A' is 1.5cm.
-    //      - given the gap of 0.3 (3mm): 1.5 / (0.3 * 100) * 100 = key is 5% of the entire keyboard width
-    const width = config.keyboard.gap * 100
-    const toRatio = (physicalButtonSizeInCm) => physicalButtonSizeInCm / width * 100
+    // gap is the smallest possible unit. ratio's are calculated based on the gap.
+    const toPixels = (physicalSizeInCm) => physicalSizeInCm / physical.gap * config.keyboard.gap;
+    // const toPixels = (physicalSizeInCm) => Math.round(physicalSizeInCm * config.keyboard.gap)
 
     return {
-        gap: config.keyboard.gap,
-        width, // i.e, assume gap size is 1% of keyboard width
-        height: config.keyboard.button.height.size1 * physical.rows + ((physical.rows - 1) * config.keyboard.gap),
+        gap: toPixels(physical.gap),
+        width: toPixels(physical.width),
+        height: toPixels(physical.height),
         button: {
             width: {
-                size1: toRatio(config.physicalKeyboardModel.button.width.size1),
-                size2: toRatio(config.physicalKeyboardModel.button.width.size2),
-                size3: toRatio(config.physicalKeyboardModel.button.width.size3),
-                size4: toRatio(config.physicalKeyboardModel.button.width.size4),
-                size5: toRatio(config.physicalKeyboardModel.button.width.size5),
-                size6: toRatio(config.physicalKeyboardModel.button.width.size6),
+                size1: toPixels(physical.button.width.size1),
+                size2: toPixels(physical.button.width.size2),
+                size3: toPixels(physical.button.width.size3),
+                size4: toPixels(physical.button.width.size4),
+                size5: toPixels(physical.button.width.size5),
+                size6: toPixels(physical.button.width.size6),
             },
 
             height: {
-                size1: config.keyboard.button.height.size1,
+                size1: toPixels(physical.button.height.size1),
+                size2: toPixels(physical.button.height.size2),
             }
         },
     }
@@ -148,25 +155,29 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
             return row.map((box) => {
                 return {...box, width: box.widthRatio * oneRatioCostInPixels};
             });
+
+            // return row.map((box) => {
+            //     return {...box, width: box.widthRatio};
+            // });
         });
 
         for (let i = 0; i < boxesWithWidth.length; i += 1) {
             let x = 0;
-            let y = i * dimensions.button.height.size1 + (dimensions.gap * i);
+            let y = i * dimensions.button.height.size2 + (dimensions.gap * i);
             for (let j = 0; j < boxesWithWidth[i].length; j += 1) {
                 scene.fillStyle = isKeyPressed(keyPressedStatus, boxesWithWidth[i][j]) ?
                     config.keyboard.button.backgroundPressed :
                     config.keyboard.button.background;
 
-                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.button.height.size1);
+                scene.fillRect(x, y, boxesWithWidth[i][j].width, dimensions.button.height.size2);
 
                 const symbol = getKeyRepresentation(boxesWithWidth[i][j], keyPressedStatus['Shift']);
 
                 const box = {
                     x, y, // top-left
                     x2: x + boxesWithWidth[i][j].width, y2: y, // top-right
-                    x3: x, y3: y + dimensions.button.height.size1, // bottom-left
-                    x4: x + boxesWithWidth[i][j].width, y4: y + dimensions.button.height.size1 // bottom-right
+                    x3: x, y3: y + dimensions.button.height.size2, // bottom-left
+                    x4: x + boxesWithWidth[i][j].width, y4: y + dimensions.button.height.size2 // bottom-right
                 };
 
                 placeText(scene, box, config.font,  symbol);
@@ -179,6 +190,7 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
 
 
 const dimensions = calcDimensions(config);
+console.log(dimensions)
 const canvas = newCanvas(dimensions.width, dimensions.height, config.canvas.background);
 const scene = canvas.getContext('2d');
 const keyPressedStatus = keyboard();
@@ -287,8 +299,8 @@ const keys = [
 
 const mousePositionReporter = new MousePositionReporter(canvas, 10, 'red');
 const rulers = [
-    new HorizontalRuler(0, 0, 'red'),
-    new VerticalRuler(0, 0, 'green')
+    new HorizontalRuler(0, 0, 1, 'red'),
+    new VerticalRuler(0, 0, 1, 'green')
 ];
 
 function draw() {
