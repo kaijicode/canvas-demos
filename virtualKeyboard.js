@@ -22,13 +22,7 @@ const config = {
     oneCmInPixels: 25,
 
     keyboard: {
-        gap: 8, // 1cm = 8px
-
-        cm: 1, // 1cm size in pixels
-        units: 8, // 1cm to
-        pixels: 8,
         size: 8,
-        oneCmInPixels: 8, // oneCmSize equals to x pixels
 
         button: {
             height: {
@@ -78,8 +72,7 @@ function calcDimensions(config) {
     const physical = config.physicalKeyboardModel;
 
     // gap is the smallest possible unit. ratio's are calculated based on the gap.
-    const toPixels = (physicalSizeInCm) => physicalSizeInCm / physical.gap * config.keyboard.gap;
-    // const toPixels = (physicalSizeInCm) => Math.round(physicalSizeInCm * config.keyboard.gap)
+    const toPixels = (physicalSizeInCm) => physicalSizeInCm / physical.gap * config.keyboard.size;
 
     return {
         gap: toPixels(physical.gap),
@@ -155,10 +148,6 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
             return row.map((box) => {
                 return {...box, width: box.widthRatio * oneRatioCostInPixels};
             });
-
-            // return row.map((box) => {
-            //     return {...box, width: box.widthRatio};
-            // });
         });
 
         for (let i = 0; i < boxesWithWidth.length; i += 1) {
