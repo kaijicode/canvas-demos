@@ -2,8 +2,15 @@ export const keyboard = () => {
     const keyPressedState = {}
 
     const keyEventHandler = (event, isPressed) => {
+        // if you press Shift+D and release the Shift before D, then D will be still in pressed state.
+        // this is erases the state when Shift released.
+        if (event.type === 'keyup' && event.key === 'Shift') {
+            Object.keys(keyPressedState).forEach((key) => {
+                delete keyPressedState[key];
+            });
+        }
+
         keyPressedState[event.key] = isPressed;
-        console.log(event.key, isPressed);
     }
 
     const handleKeyDownPress = (event) => {

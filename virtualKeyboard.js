@@ -22,7 +22,7 @@ const config = {
     oneCmInPixels: 25,
 
     keyboard: {
-        size: 12,
+        size: 8,
 
         button: {
             background: '#000000',
@@ -108,8 +108,6 @@ function getKeyRepresentation(key, isShiftPressed) {
     return key.display ? key.display : key.key;
 }
 
-// TODO: bug, if you press Shift+D and release it, the key rendered as pressed
-// TODO: and the other way around
 function isKeyPressed(currentPressedKey, key) {
     return currentPressedKey[key.key] || currentPressedKey[key.altKey];
 }
@@ -175,7 +173,6 @@ function drawKeyboard(scene, config, canvasWidth, canvasHeight, keys) {
 
 
 const dimensions = calcDimensions(config);
-console.log(dimensions)
 const canvas = newCanvas(dimensions.width, dimensions.height, config.canvas.background);
 const scene = canvas.getContext('2d');
 const keyPressedStatus = keyboard();
