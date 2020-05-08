@@ -1,1 +1,11 @@
-keyboard.png by <a href="https://pixabay.com/users/Clker-Free-Vector-Images-3736/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=311803">Clker-Free-Vector-Images</a> from <a href="https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=311803">Pixabay</a>
+# Canvas demos
+
+### Development
+```
+parcel src/index.html
+```
+
+### Build
+```
+parcel build src/index.html
+```

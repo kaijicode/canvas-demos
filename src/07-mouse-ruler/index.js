@@ -1,5 +1,5 @@
-import {clearScene, newCanvas} from "./canvas";
-import {line} from "./primitives";
+import {clearScene, newCanvas} from "../canvas";
+import {line} from "../primitives";
 
 
 const { canvas, scene } = newCanvas(500, 380, '#e2e2e2');

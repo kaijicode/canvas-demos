@@ -1,6 +1,6 @@
-import { keyboard } from "./keyboard.js";
-import {HorizontalRuler, MousePositionReporter, VerticalRuler} from "./mousePositionReporter";
-import {clearScene} from "./canvas";
+import { keyboard } from "../keyboard.js";
+import {HorizontalRuler, MousePositionReporter, VerticalRuler} from "../mousePositionReporter";
+import {clearScene} from "../canvas";
 
 // TODO: Mouse interaction
 // TODO: Add option to use strokeRect
