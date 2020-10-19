@@ -1,9 +1,9 @@
-export function newCanvas(width, height, background) {
+export function newCanvas(width, height, background, target = document.body) {
     const canvas = document.createElement('canvas');
     canvas.setAttribute('width', width);
     canvas.setAttribute('height', height);
     canvas.style.background = background;
-    document.body.appendChild(canvas);
+    target.appendChild(canvas);
 
     return {
         canvas,
