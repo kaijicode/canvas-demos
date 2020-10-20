@@ -1,0 +1,15 @@
+body {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+canvas {
+  background: #eee;
+  border: 1px dashed #243B53;
+}
+/*# sourceMappingURL=style.10277c8b.css.map */
