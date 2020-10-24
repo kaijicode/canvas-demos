@@ -8,3 +8,4 @@
 - [06-measure-text-height](https://vladimirze.github.io/canvas-demos/06-measure-text-height/)
 - [07-mouse-ruler](https://vladimirze.github.io/canvas-demos/07-mouse-ruler/)
 - [08-game-of-life](https://vladimirze.github.io/canvas-demos/08-game-of-life/)
+- [09-cube-2d](https://vladimirze.github.io/canvas-demos/09-cube-2d/)
