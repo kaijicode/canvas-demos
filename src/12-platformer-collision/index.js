@@ -112,17 +112,37 @@ class Player {
         this.y += velocity;
     }
 
+    // returns closest object to player
+    closest(player, objects) {
+        return objects.reduce((closest, object) => {
+            const { top: closestTop, right: closestRight, bottom: closestBottom, left: closestLeft } = closest.distance(player);
+            const { top, right, bottom, left } = object.distance(player);
+
+
+            const closestMin = sum([closestTop, closestRight, closestBottom, closestLeft].filter((x) => x >= 0));
+            const objectMin = sum([top, right, bottom, left].filter((x) => x >= 0));
+
+            if (objectMin < closestMin) {
+                return object;
+            }
+
+            return closest;
+        }, objects[0]);
+    }
+
     update(scene, objects) {
         // check for collision with other objects
-        let collision = {};
-        for (const object of objects) {
-            collision = object.checkAABB(this);
-
-            if (collision) {
-                console.log('collision! ', collision);
-                break;
-            }
-        }
+        // const collisions = [];
+        //
+        // let collision = {};
+        // for (const object of objects) {
+        //     collision = object.checkAABB(this);
+        //
+        //     if (collision) {
+        //         console.log('collision! ', collision);
+        //         collisions.push(object);
+        //     }
+        // }
 
         // calculate movement velocity per direction
         // const velocity = objects.reduce((closest, object) => {
@@ -138,32 +158,17 @@ class Player {
         // const canMoveRightLeft = velocity.left >= 0 || velocity.right >= 0;
         // const canMoveUpDown = velocity.top >= 0 || velocity.bottom >= 0;
 
-        const { top, right, bottom, left } = objects[0].distance(this);
-        const { top: top2, right: right2, bottom: bottom2, left: left2 } = objects[1].distance(this);
+        // const { top, right, bottom, left } = objects[0].distance(this);
+        // const { top: top2, right: right2, bottom: bottom2, left: left2 } = objects[1].distance(this);
 
         // console.log(objects[0].name, top, right, bottom, left);
         // console.log(objects[1].name, top2, right2, bottom2, left2);
 
-        const closestObject = objects.reduce((closest, object) => {
-            const { top: closestTop, right: closestRight, bottom: closestBottom, left: closestLeft } = closest.distance(this);
-            const { top, right, bottom, left } = object.distance(this);
-
-
-            const closestMin = sum([closestTop, closestRight, closestBottom, closestLeft].filter((x) => x >= 0));
-            const objectMin = sum([top, right, bottom, left].filter((x) => x >= 0));
-
-            if (objectMin < closestMin) {
-                return object;
-            }
-
-            return closest;
-        }, objects[0]);
+        const closestObject = this.closest(this, objects);
 
         // console.log('closest object is: ', closestObject.name);
 
         const distance = closestObject.distance(this);
-
-
 
         // subtract one pixel to avoid collision
         // const velocity = {
@@ -329,6 +334,9 @@ class Thing {
     render(scene) {
         scene.fillStyle = this.color;
         scene.fillRect(this.x, this.y, this.width, this.height);
+        scene.fillStyle = 'rgba(0, 0, 0, 1)';
+        scene.font = '12px monospace';
+        scene.fillText(this.name, this.x, this.y);
     }
 
     isInside = (n, min, max) => {
@@ -393,6 +401,13 @@ class Thing {
         // return ;
     }
 
+    checkAABB2(player) {
+        return (
+            (player.y < this.y + this.height) && (player.y + player.height > this.y) &&
+            (player.x < this.x + this.width) && (player.x + player.width > this.x)
+        )
+    }
+
     distance(object) {
         // return {
         //     top: object.y - (this.y + this.height),
@@ -417,6 +432,10 @@ const scene = canvas.getContext("2d");
 const player = new Player(canvas.width / 2, canvas.height - 20, 20, 20, '#8dc267');
 const box = new Thing('box', canvas.width / 2 + 120, canvas.height - 40, 40, 40, '#ef8f4f');
 const box2 = new Thing('box-2', canvas.width / 2 - 120, canvas.height - 120, 40, 40, '#ef8f4f');
+const box3 = new Thing('box-3', 200, canvas.height - 220, 40, 40, '#ef8f4f');
+const box4 = new Thing('box-4', 240, canvas.height - 220, 40, 40, '#b399c9');
+const box5 = new Thing('box-5', 300, canvas.height - 260, 40, 40, '#ef8f4f');
+const box6 = new Thing('box-6', 340, canvas.height - 270, 40, 40, '#b399c9');
 const platform1 = new Thing('platform1', 50, canvas.height - 60, 150, 10, '#fff');
 const platform2 = new Thing('platform2', 250, canvas.height - 120, 150, 10, '#fff');
 
@@ -425,6 +444,10 @@ const objects = [
     // ground,
     box,
     box2,
+    box3,
+    box4,
+    box5,
+    box6,
     player,
     // platform1,
     // platform2
