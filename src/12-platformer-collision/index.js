@@ -316,6 +316,9 @@ class Player {
     render(scene) {
         scene.fillStyle = this.color;
         scene.fillRect(this.x, this.y, this.width, this.height);
+        scene.fillStyle = 'rgba(0, 0, 0, 1)';
+        scene.font = '12px monospace';
+        scene.fillText(`${this.x},${this.y}`, this.x, this.y);
     }
 }
 
@@ -436,6 +439,35 @@ const box3 = new Thing('box-3', 200, canvas.height - 220, 40, 40, '#ef8f4f');
 const box4 = new Thing('box-4', 240, canvas.height - 220, 40, 40, '#b399c9');
 const box5 = new Thing('box-5', 300, canvas.height - 260, 40, 40, '#ef8f4f');
 const box6 = new Thing('box-6', 340, canvas.height - 270, 40, 40, '#b399c9');
+const box7 = new Thing('box-7', 240, canvas.height - 350, 40, 40, '#b399c9');
+
+const box8 = new Thing('box-8', 0, canvas.height - 40, 40, 40, '#ef8f4f');
+const box9 = new Thing('box-9', 0, canvas.height - 80, 40, 40, '#b399c9');
+const box10 = new Thing('box-10', 40, canvas.height - 40, 40, 40, '#b399c9');
+
+const box11 = new Thing('box-11', 80, canvas.height - 140, 40, 40, '#ef8f4f');
+const box12 = new Thing('box-12', 40, canvas.height - 140, 40, 40, '#b399c9');
+const box13 = new Thing('box-13', 80, canvas.height - 100, 40, 40, '#b399c9');
+
+const box14 = new Thing('box-14', 40, 40, 40, 40, '#b399c9');
+const box15 = new Thing('box-15', 80, 40, 40, 40, '#ef8f4f');
+const box16 = new Thing('box-16', 120, 40, 40, 40, '#b399c9');
+const box17 = new Thing('box-17', 40, 120, 40, 40, '#ef8f4f');
+const box18 = new Thing('box-18', 80, 120, 40, 40, '#b399c9');
+const box19 = new Thing('box-19', 120, 120, 40, 40, '#ef8f4f');
+
+const box20 = new Thing('box-20', canvas.width-80, 40, 40, 40, '#ef8f4f');
+const box21 = new Thing('box-21', canvas.width-80, 80, 40, 40, '#b399c9');
+const box22 = new Thing('box-22', canvas.width-80, 120, 40, 40, '#ef8f4f');
+const box23 = new Thing('box-23', canvas.width-160, 40, 40, 40, '#ef8f4f');
+const box24 = new Thing('box-24', canvas.width-160, 80, 40, 40, '#b399c9');
+const box25 = new Thing('box-25', canvas.width-160, 120, 40, 40, '#ef8f4f');
+
+const box26 = new Thing('box-26', canvas.width-200, 200, 40, 40, '#b399c9');
+const box27 = new Thing('box-27', canvas.width-160, 200, 40, 40, '#ef8f4f');
+const box28 = new Thing('box-28', canvas.width-120, 200, 40, 40, '#b399c9');
+const box29 = new Thing('box-29', canvas.width-80, 200, 40, 40, '#ef8f4f');
+
 const platform1 = new Thing('platform1', 50, canvas.height - 60, 150, 10, '#fff');
 const platform2 = new Thing('platform2', 250, canvas.height - 120, 150, 10, '#fff');
 
@@ -448,6 +480,29 @@ const objects = [
     box4,
     box5,
     box6,
+    box7,
+    box8,
+    box9,
+    box10,
+    box11,
+    box12,
+    box13,
+    box14,
+    box15,
+    box16,
+    box17,
+    box18,
+    box19,
+    box20,
+    box21,
+    box22,
+    box23,
+    box24,
+    box25,
+    box26,
+    box27,
+    box28,
+    box29,
     player,
     // platform1,
     // platform2
