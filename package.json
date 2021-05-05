@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "start": "parcel serve ./src/index.html",
-    "build": "parcel build --no-minify --dist-dir docs --public-url https://vladimirze.github.io/canvas-demos/ ./src/index.html",
+    "build": "parcel build --no-minify --dist-dir docs --public-url https://kaijicode.github.io/canvas-demos/ ./src/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
