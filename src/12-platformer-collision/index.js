@@ -131,52 +131,8 @@ class Player {
     }
 
     update(scene, objects) {
-        // check for collision with other objects
-        // const collisions = [];
-        //
-        // let collision = {};
-        // for (const object of objects) {
-        //     collision = object.checkAABB(this);
-        //
-        //     if (collision) {
-        //         console.log('collision! ', collision);
-        //         collisions.push(object);
-        //     }
-        // }
-
-        // calculate movement velocity per direction
-        // const velocity = objects.reduce((closest, object) => {
-        //     const { top, right, bottom, left } = object.distance(this);
-        //     closest.top = top >= 0 ? Math.min(closest.top, top) : closest.top;
-        //     closest.right = right >= 0 ? Math.min(closest.right, right) : closest.right;
-        //     closest.bottom = bottom >= 0 ? Math.min(closest.bottom, bottom) : closest.bottom;
-        //     closest.left = left >= 0 ? Math.min(closest.left, left) : closest.left;
-        //
-        //     return closest;
-        // }, { top: this.yVelocity, right: this.xVelocity, bottom: this.yVelocity, left: this.xVelocity });
-        //
-        // const canMoveRightLeft = velocity.left >= 0 || velocity.right >= 0;
-        // const canMoveUpDown = velocity.top >= 0 || velocity.bottom >= 0;
-
-        // const { top, right, bottom, left } = objects[0].distance(this);
-        // const { top: top2, right: right2, bottom: bottom2, left: left2 } = objects[1].distance(this);
-
-        // console.log(objects[0].name, top, right, bottom, left);
-        // console.log(objects[1].name, top2, right2, bottom2, left2);
-
         const closestObject = this.closest(this, objects);
-
-        // console.log('closest object is: ', closestObject.name);
-
         const distance = closestObject.distance(this);
-
-        // subtract one pixel to avoid collision
-        // const velocity = {
-        //     top: this.xVelocity,
-        //     right: distance.right - 1 >= 0 ? Math.min(this.baseXVelocity, distance.right - 1) : this.baseXVelocity,
-        //     bottom: this.xVelocity,
-        //     left: distance.left - 1 >= 0 ? Math.min(this.baseXVelocity, distance.left - 1) : this.baseXVelocity,
-        // }
 
         const velocity = {
             top: this.baseXVelocity,
@@ -213,35 +169,7 @@ class Player {
             velocity.bottom = this.baseYVelocity;
         }
 
-        // const velocity = {
-        //     top: this.xVelocity,
-        //     right: this.xVelocity,
-        //     bottom: this.xVelocity,
-        //     left: this.xVelocity,
-        // }
-
-        // console.log(velocity)
-        // this.log(closest);
-
-        // for (const object of objects) {
-        //     distance = {};
-        //     distance = object.distance(this);
-        //
-        //     // calculate distance from all objects
-        //     // find the closest object
-        //     // apply min(xVelocity, distanceX) when player is moving
-        //     //
-        //
-        //     // if (distance.top <= 0 && distance.right <= 0 && distance.bottom <= 0 && distance.left <= 0) {
-        //     //     const max = Math.max(distance.top, distance.right, distance.bottom, distance.left);
-        //     //     console.log(distance, max);
-        //     // }
-        //     // this.log(distance);
-        //     if (isCollision) {
-        //         break;
-        //     }
-        // }
-
+        // movement
         if (keyboard.right) {
             this.moveRight(velocity.right);
         }
@@ -250,7 +178,6 @@ class Player {
             this.moveLeft(velocity.left);
         }
 
-        // collision test
         if (keyboard.up) {
             this.moveUp(velocity.top);
         }
@@ -259,37 +186,6 @@ class Player {
             this.moveDown(velocity.bottom);
         }
 
-        // TODO: prevent moving into other objects
-        // if (keyboard.right && !collision.right) {
-        //     this.moveRight();
-        // }
-        //
-        // if (keyboard.left && !collision.left) {
-        //     this.moveLeft();
-        // }
-
-        // TODO: cancel gravity when player stands still?
-
-        // if (isSpacebarKeyPressed && !this.jumpAnimation.isRunning()) {
-        //     this.jumpAnimation.start();
-        //     this.xVelocity *= 2;
-        // }
-        //
-        // if (this.jumpAnimation.isRunning() && !collision.bottom && !collision.top) {
-        //     this.y += this.jumpAnimation.step();
-        // }
-        //
-        // if (this.jumpAnimation.isLastFrame() || collision.bottom || collision.top) {
-        //     this.jumpAnimation.stop();
-        //     this.xVelocity = this.baseXVelocity;
-        // }
-        //
-        // if (collision.bottom) {
-        //     this.y = collision.y - this.height;
-        // } else {
-        //     this.y += this.gravity;
-        // }
-        //
 
         // scene boundaries
         // top boundary
