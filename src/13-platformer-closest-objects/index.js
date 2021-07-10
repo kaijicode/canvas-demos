@@ -32,12 +32,12 @@ const checkAABB = (objectA, objectB) => {
     return !(top || right || bottom || left);
 }
 
-const distance = (objectA, objectB) => {
+const distance = (player, target) => {
     return {
-        top: (objectB.y + objectB.height) - objectA.y,
-        right: objectB.x - (objectA.x + objectA.width),
-        bottom: objectB.y - (objectA.y + objectA.height),
-        left: (objectB.x + objectB.width) - objectA.x
+        top: player.y - (target.y + target.height),
+        right: target.x - (player.x + player.width),
+        bottom: target.y - (player.y + player.height),
+        left: player.x - (target.x + target.width)
     }
 }
 
@@ -73,22 +73,28 @@ const checkPotentialCollision = (scene, object, target, direction) => {
 
 class Beam {
     constructor() {
-        this.top = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        this.right = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        this.bottom = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        this.left = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        // this.top = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        // this.right = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        // this.bottom = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        // this.left = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        this.horizontal = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        this.vertical = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
     }
 
 
     update(scene, target) {
-        this.top = {...this.top, x: target.x, y: 0, width: target.width, height: target.y};
-        this.right = {...this.right, x: target.x + target.width, y: target.y, width: scene.canvas.width - (target.x + target.width), height: target.height};
-        this.bottom = {...this.bottom, x: target.x, y: target.y + target.height, width: target.width, height: scene.canvas.height - (target.y + target.height)};
-        this.left = {...this.left, x: 0, y: target.y, height: target.height, width: target.x};
+        // this.top = {...this.top, x: target.x, y: 0, width: target.width, height: target.y};
+        // this.right = {...this.right, x: target.x + target.width, y: target.y, width: scene.canvas.width - (target.x + target.width), height: target.height};
+        // this.bottom = {...this.bottom, x: target.x, y: target.y + target.height, width: target.width, height: scene.canvas.height - (target.y + target.height)};
+        // this.left = {...this.left, x: 0, y: target.y, height: target.height, width: target.x};
+        this.horizontal = {...this.horizontal, x: 0, y: target.y, width: scene.canvas.width, height: target.height};
+        this.vertical = {...this.vertical, x: target.x, y: 0, width: target.width, height: scene.canvas.height};
     }
 
     render(scene) {
-        for (const object of [this.top, this.right, this.bottom, this.left]) {
+        // const objects = [this.top, this.right, this.bottom, this.left];
+        const objects = [this.horizontal, this.vertical];
+        for (const object of objects) {
             scene.lineWidth = "1";
             scene.strokeStyle = object.color;
             scene.strokeRect(object.x, object.y, object.width, object.height);
@@ -139,22 +145,74 @@ class Player {
     // returns closest objects to player
     closest(scene, player, objects) {
         // scene.canvas.width, scene.canvas.height
-        const [top, right, bottom, left] = [0, 0, 0, 0];
+        // const [top, right, bottom, left] = [0, 0, 0, 0];
 
         const closestObjects = {
-            top: [],
-            right: [],
-            bottom: [],
-            left: []
+            top: {
+                objects: [],
+                distance: {}
+            },
+            right: {
+                objects: [],
+                distance: []
+            },
+            bottom: {
+                objects: [],
+                distance: []
+            },
+            left: {
+                objects: [],
+                distance: {}
+            }
         };
 
         objects.forEach((object) => {
-            const distance = distance(this, object);
+            if (checkAABB(this.beam.horizontal, object)) {
+                const offset = distance(this, object);
 
+                if (offset.left >= 0) {
+                    if (offset.left === closestObjects.left.distance.left) {
+                        closestObjects.left.objects.push(object);
+                    } else if (!closestObjects.left.distance.left || offset.left < closestObjects.left.distance.left) {
+                        closestObjects.left.objects = [object];
+                        closestObjects.left.distance = offset;
+                    }
+                } else if (offset.right >= 0) {
+                    if (offset.right === closestObjects.right.distance.right) {
+                        closestObjects.right.objects.push(object);
+                    } else if (!closestObjects.right.distance.right || offset.right < closestObjects.right.distance.right) {
+                        closestObjects.right.objects = [object];
+                        closestObjects.right.distance = offset;
+                    }
+                }
+            } else if (checkAABB(this.beam.vertical, object)) {
+                const offset = distance(this, object);
 
+                if (offset.top >= 0) {
+                    if (offset.top === closestObjects.top.distance.top) {
+                        closestObjects.top.objects.push(object);
+                    } else if (!closestObjects.top.distance.top || offset.top < closestObjects.top.distance.top) {
+                        closestObjects.top.objects = [object];
+                        closestObjects.top.distance = offset;
+                    }
+                } else if (offset.bottom >= 0) {
+                    if (offset.bottom === closestObjects.bottom.distance.bottom) {
+                        closestObjects.bottom.objects.push(object);
+                    } else if (!closestObjects.bottom.distance.bottom || offset.bottom < closestObjects.bottom.distance.bottom) {
+                        closestObjects.bottom.objects = [object];
+                        closestObjects.bottom.distance = offset;
+                    }
+                }
+            }
         });
 
         return closestObjects;
+    }
+
+    mark(objects) {
+        for (const object of objects) {
+            object.markAsClosest();
+        }
     }
 
     update(scene, objects) {
@@ -162,15 +220,30 @@ class Player {
         // calculate closest top, right, bottom and left objects
         // player can be close to multiple top objects
 
-        // const closestObject = this.closest(scene, this, objects);
+        /////////////// mark
+        const closestObjects = this.closest(scene, this, objects);
+        // this.log(closestObjects)
+
+        for (const object of objects) {
+            object.unMarkAsClosest();
+        }
+
+        this.mark(closestObjects.top.objects);
+        this.mark(closestObjects.right.objects);
+        this.mark(closestObjects.bottom.objects);
+        this.mark(closestObjects.left.objects);
+        ///////////////
+
 
 
         const velocity = {
-            top: this.baseYVelocity,
-            right: this.baseXVelocity,
-            bottom: this.baseYVelocity,
-            left: this.baseXVelocity
+            top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top - 1),
+            right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right - 1),
+            bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
+            left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
         }
+
+        this.log(velocity)
 
 
         //////////////////////////////////////// movement
