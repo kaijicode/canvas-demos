@@ -1,12 +1,17 @@
-/** Pallete
-#fcf0c0
-#ef8f4f
-#f8d803
-#8dc267
-#66dcfe
-#49a0e1
-#b399c9
-*/
+const COLORS = {
+    BEIGE: '#fcf0c0',
+    ORANGE: '#ef8f4f',
+    YELLOW: '#f8d803',
+    GREEN: '#8dc267',
+    LIGHT_BLUE: '#66dcfe',
+    BLUE: '#49a0e1',
+    PURPLE: '#b399c9',
+    SOFT_RED: '#fcc0cc',
+    SOFT_YELLOW: '#fcf0c0',
+    SOFT_CYAN: '#c0fcf0',
+    SOFT_BLUE: '#c0ccfc'
+};
+
 
 const sum = (arr) => {
     return arr.reduce((total, x) => total + x, 0)
@@ -19,7 +24,6 @@ const keyboard = {
     down: false,
     space: false
 }
-
 
 const checkAABB = (objectA, objectB) => {
     const top = objectB.y > objectA.y + objectA.height;
@@ -49,52 +53,20 @@ const DIRECTION = {
 };
 
 
-// const checkDirection = (object, target) => {
-//     if (object.) {
-//
-//     }
-// }
-
-const checkPotentialCollision = (scene, object, target, direction) => {
-    switch (direction) {
-        case DIRECTION.TOP:
-            return checkAABB({x: object.x, y: 0, width: object.width, height: object.y}, target);
-
-        // case DIRECTION.RIGHT:
-        //     return checkAABB({x: 0, y: object.y, width: object.x, height: object.y + object.height}, target);
-        //
-        // case DIRECTION.BOTTOM:
-        //     return checkAABB({x: object.x, y: object.y + object.height, width: object.width, height: scene.canvas.height - (object.y + object.height)}, target);
-        //
-        // case DIRECTION.LEFT:
-        //     return checkAABB({x: 0, y: 0, width: 0, height: 0}, target);
-    }
-}
-
 class Beam {
     constructor() {
-        // this.top = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        // this.right = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        // this.bottom = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
-        // this.left = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
         this.horizontal = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
         this.vertical = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
     }
 
 
     update(scene, target) {
-        // this.top = {...this.top, x: target.x, y: 0, width: target.width, height: target.y};
-        // this.right = {...this.right, x: target.x + target.width, y: target.y, width: scene.canvas.width - (target.x + target.width), height: target.height};
-        // this.bottom = {...this.bottom, x: target.x, y: target.y + target.height, width: target.width, height: scene.canvas.height - (target.y + target.height)};
-        // this.left = {...this.left, x: 0, y: target.y, height: target.height, width: target.x};
         this.horizontal = {...this.horizontal, x: 0, y: target.y, width: scene.canvas.width, height: target.height};
         this.vertical = {...this.vertical, x: target.x, y: 0, width: target.width, height: scene.canvas.height};
     }
 
     render(scene) {
-        // const objects = [this.top, this.right, this.bottom, this.left];
-        const objects = [this.horizontal, this.vertical];
-        for (const object of objects) {
+        for (const object of [this.horizontal, this.vertical]) {
             scene.lineWidth = "1";
             scene.strokeStyle = object.color;
             scene.strokeRect(object.x, object.y, object.width, object.height);
@@ -222,7 +194,6 @@ class Player {
 
         /////////////// mark
         const closestObjects = this.closest(scene, this, objects);
-        // this.log(closestObjects)
 
         for (const object of objects) {
             object.unMarkAsClosest();
@@ -242,9 +213,6 @@ class Player {
             bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
             left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
         }
-
-        this.log(velocity)
-
 
         //////////////////////////////////////// movement
         if (keyboard.right) {
@@ -405,7 +373,7 @@ class Thing {
     }
 
     markAsClosest() {
-        this.color = '#000000';
+        this.color = COLORS.YELLOW;
     }
 
     unMarkAsClosest() {
