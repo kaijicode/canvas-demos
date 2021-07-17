@@ -12,6 +12,15 @@ const COLORS = {
     SOFT_BLUE: '#c0ccfc'
 };
 
+const DIRECTION = {
+    TOP: 'top',
+    RIGHT: 'right',
+    BOTTOM: 'bottom',
+    LEFT: 'left'
+};
+
+const DIRECTION_HORIZONTAL = [DIRECTION.LEFT, DIRECTION.RIGHT];
+const DIRECTION_VERTICAL = [DIRECTION.TOP, DIRECTION.BOTTOM];
 
 const sum = (arr) => {
     return arr.reduce((total, x) => total + x, 0)
@@ -45,12 +54,116 @@ const distance = (player, target) => {
     }
 }
 
-const DIRECTION = {
-    TOP: 'top',
-    RIGHT: 'right',
-    BOTTOM: 'bottom',
-    LEFT: 'left'
+const getObjectDimensions = ({ x, y, width, height, xVelocity, yVelocity }) => {
+    return {
+        x: x - xVelocity,
+        y: y - yVelocity,
+        width: xVelocity + width + xVelocity,
+        height: yVelocity + height + yVelocity
+    }
 };
+
+
+const findNearbyObjects = (player, objects) => {
+    const playerDimensions = getObjectDimensions(player);
+
+    return objects.filter((object) => {
+        return checkAABB(playerDimensions, object)
+    });
+}
+
+const getCollisionDirection = (offset) => {
+    let side = DIRECTION.TOP, value = offset.top;
+    [DIRECTION.RIGHT, DIRECTION.BOTTOM, DIRECTION.LEFT].forEach((direction) => {
+        if (offset[direction] < value) {
+            value = offset[direction];
+            side = direction;
+        }
+    });
+
+    return { direction: side, value };
+}
+
+const groupClosestObjectsByLocation = (player, objects) => {
+    const map = {
+        top: { objects: [], distance: {} },
+        right: { objects: [], distance: {} },
+        bottom: { objects: [], distance: {} },
+        left: { objects: [], distance: {} }
+    };
+
+    const insertIfCloser = (object, offset, direction) => {
+        if (offset[direction] < 0) {
+            return;
+        }
+
+        const closestDistance = map[direction].distance;
+
+        // either current object's distance is same as the closest object found so far OR
+        // the closest object does not exist in a list yet
+        if (offset[direction] === closestDistance[direction] || !map[direction].objects.length) {
+            map[direction].objects.push(object);
+            map[direction].distance = offset;
+        } else if (offset[direction] < closestDistance[direction]) {
+            // found closer object
+            map[direction].objects = [object];
+            map[direction].distance = offset;
+        }
+    }
+
+    objects.forEach((object) => {
+        const offset = distance(player, object);
+
+        // TODO
+        // collision is triggered on the same object twice
+        // when checking top-bottom and when checking left-right
+        // insertIfCloser(object, offset, 'top');
+        // insertIfCloser(object, offset, 'right');
+        // insertIfCloser(object, offset, 'bottom');
+        // insertIfCloser(object, offset, 'left');
+
+
+        // if (offset.top >= 0 || offset.bottom >= 0) {
+        //     insertIfCloser(object, offset, 'top');
+        //     insertIfCloser(object, offset, 'bottom');
+        // } else if (offset.left >= 0 || offset.right >= 0) {
+        //     insertIfCloser(object, offset, 'right');
+        //     insertIfCloser(object, offset, 'left');
+        // }
+
+
+        // if (offset.top >= 0) {
+        //     insertIfCloser(object, offset, 'top');
+        // } else if (offset.right >= 0) {
+        //     insertIfCloser(object, offset, 'right');
+        // } else if (offset.bottom >= 0) {
+        //     insertIfCloser(object, offset, 'bottom');
+        // } else if (offset.left >= 0) {
+        //     insertIfCloser(object, offset, 'left');
+        // }
+
+        // determine WHERE the collision occurs:
+        // is it horizontal collision?
+            // is it left or right?
+        // is it vertical collision?
+            // is it top or down?
+
+
+        const collision = getCollisionDirection(offset);
+
+        if (DIRECTION_HORIZONTAL.includes(collision.direction)) {
+            insertIfCloser(object, offset, 'left');
+            insertIfCloser(object, offset, 'right');
+        } else if (DIRECTION_VERTICAL.includes(collision.direction)) {
+            insertIfCloser(object, offset, 'top');
+            insertIfCloser(object, offset, 'bottom');
+        }
+    });
+
+    return map;
+}
+
+
 
 
 class Beam {
@@ -59,10 +172,33 @@ class Beam {
         this.vertical = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
     }
 
-
-    update(scene, target) {
+    canvasBeam(scene, target) {
         this.horizontal = {...this.horizontal, x: 0, y: target.y, width: scene.canvas.width, height: target.height};
         this.vertical = {...this.vertical, x: target.x, y: 0, width: target.width, height: scene.canvas.height};
+    }
+
+    velocityBeam(scene, target) {
+        // actually its maxXVelocity, maxYVelocity instead of xVlocity and yVelocity
+        this.horizontal = {
+            ...this.horizontal,
+            x: target.x - target.xVelocity,
+            y: target.y,
+            width: target.xVelocity + target.width + target.xVelocity,
+            height: target.height
+        };
+
+        this.vertical = {
+            ...this.vertical,
+            x: target.x,
+            y: target.y - target.yVelocity,
+            width: target.width,
+            height: target.yVelocity + target.height + target.yVelocity
+        };
+    }
+
+    update(scene, target) {
+        // this.canvasBeam(scene, target);
+        this.velocityBeam(scene, target)
     }
 
     render(scene) {
@@ -193,7 +329,12 @@ class Player {
         // player can be close to multiple top objects
 
         /////////////// mark
-        const closestObjects = this.closest(scene, this, objects);
+        const nearby = findNearbyObjects(this, objects);
+        // this.log(nearby)
+        const closestObjects = groupClosestObjectsByLocation(this, nearby);
+
+        // const closestObjects = this.closest(scene, this, objects);
+        this.log(closestObjects)
 
         for (const object of objects) {
             object.unMarkAsClosest();
@@ -205,13 +346,18 @@ class Player {
         this.mark(closestObjects.left.objects);
         ///////////////
 
-
+        // const velocity = {
+        //     top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top - 1),
+        //     right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right - 1),
+        //     bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
+        //     left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
+        // }
 
         const velocity = {
-            top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top - 1),
-            right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right - 1),
-            bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
-            left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
+            top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top),
+            right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right),
+            bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom),
+            left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left)
         }
 
         //////////////////////////////////////// movement
@@ -388,7 +534,7 @@ const scene = canvas.getContext("2d");
 // const ground = new Thing('ground', 0, canvas.height - 80, canvas.width, 80, '#b399c9');
 
 const player = new Player(canvas.width / 2, canvas.height - 20, 20, 20, '#8dc267');
-const box = new Thing('box', canvas.width / 2 + 120, canvas.height - 40, 40, 40, '#ef8f4f');
+const box = new Thing('box', 500, canvas.height - 40, 40, 40, '#ef8f4f');
 const box2 = new Thing('box-2', canvas.width / 2 - 120, canvas.height - 120, 40, 40, '#ef8f4f');
 const box3 = new Thing('box-3', 200, canvas.height - 220, 40, 40, '#ef8f4f');
 const box4 = new Thing('box-4', 240, canvas.height - 220, 40, 40, '#b399c9');
@@ -422,6 +568,12 @@ const box26 = new Thing('box-26', canvas.width-200, 200, 40, 40, '#b399c9');
 const box27 = new Thing('box-27', canvas.width-160, 200, 40, 40, '#ef8f4f');
 const box28 = new Thing('box-28', canvas.width-120, 200, 40, 40, '#b399c9');
 const box29 = new Thing('box-29', canvas.width-80, 200, 40, 40, '#ef8f4f');
+
+const box30 = new Thing('box-30', 400, 300, 40, 40, '#ef8f4f');
+const box31 = new Thing('box-31', 360, 340, 40, 40, '#b399c9');
+const box32 = new Thing('box-32', 400, 340, 40, 40, '#b399c9');
+const box33 = new Thing('box-33', 400, 380, 40, 40, '#ef8f4f');
+const box34 = new Thing('box-34', 440, 340, 40, 40, '#b399c9');
 
 const platform1 = new Thing('platform1', 50, canvas.height - 60, 150, 10, '#fff');
 const platform2 = new Thing('platform2', 250, canvas.height - 120, 150, 10, '#fff');
@@ -463,6 +615,11 @@ const objects = [
     box27,
     box28,
     box29,
+    box30,
+    box31,
+    box32,
+    box33,
+    box34,
     player,
     // platform1,
     // platform2
