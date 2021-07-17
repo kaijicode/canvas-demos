@@ -515,6 +515,7 @@ class Player {
             this.y = scene.canvas.height - this.height;
         }
 
+        // TODO: Update raycast so that the ray not penetrating the closest objects
         this.raycast.update(scene, this);
     }
 
