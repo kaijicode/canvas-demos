@@ -164,7 +164,48 @@ const groupClosestObjectsByLocation = (player, objects) => {
 }
 
 
+const closest = (scene, player, objects) => {
+    // const { vertical: verticalRay, horizontal: horizontalRay } = raycast(scene, player);
+    const map = {
+        top: { objects: [], distance: {} },
+        right: { objects: [], distance: {} },
+        bottom: { objects: [], distance: {} },
+        left: { objects: [], distance: {} }
+    };
 
+    const insertIfCloser = (object, offset, direction) => {
+        if (offset[direction] < 0) {
+            return;
+        }
+
+        const closestDistance = map[direction].distance;
+
+        // either current object's distance is same as the closest object found so far OR
+        // the closest object does not exist in a list yet
+        if (offset[direction] === closestDistance[direction] || !map[direction].objects.length) {
+            map[direction].objects.push(object);
+            map[direction].distance = offset;
+        } else if (offset[direction] < closestDistance[direction]) {
+            // found closer object
+            map[direction].objects = [object];
+            map[direction].distance = offset;
+        }
+    }
+
+    objects.forEach((object) => {
+        const offset = distance(player, object);
+
+        if (checkAABB(player.raycast.horizontal, object)) {
+            insertIfCloser(object, offset, DIRECTION.LEFT);
+            insertIfCloser(object, offset, DIRECTION.RIGHT);
+        } else if (checkAABB(player.raycast.vertical, object)) {
+            insertIfCloser(object, offset, DIRECTION.TOP);
+            insertIfCloser(object, offset, DIRECTION.BOTTOM);
+        }
+    });
+
+    return map;
+}
 
 class Beam {
     constructor() {
@@ -173,8 +214,21 @@ class Beam {
     }
 
     canvasBeam(scene, target) {
-        this.horizontal = {...this.horizontal, x: 0, y: target.y, width: scene.canvas.width, height: target.height};
-        this.vertical = {...this.vertical, x: target.x, y: 0, width: target.width, height: scene.canvas.height};
+        this.horizontal = {
+            ...this.horizontal,
+            x: 0,
+            y: target.y,
+            width: scene.canvas.width,
+            height: target.height
+        };
+
+        this.vertical = {
+            ...this.vertical,
+            x: target.x,
+            y: 0,
+            width: target.width,
+            height: scene.canvas.height
+        };
     }
 
     velocityBeam(scene, target) {
@@ -197,8 +251,8 @@ class Beam {
     }
 
     update(scene, target) {
-        // this.canvasBeam(scene, target);
-        this.velocityBeam(scene, target)
+        this.canvasBeam(scene, target);
+        // this.velocityBeam(scene, target)
     }
 
     render(scene) {
@@ -210,6 +264,62 @@ class Beam {
     }
 }
 
+
+class Raycast {
+    constructor() {
+        this.horizontal = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+        this.vertical = {x: 0, y: 0, width: 0, height: 0, color: '#000000'};
+    }
+
+    update(scene, target) {
+        this.horizontal = {
+            ...this.horizontal,
+            x: 0,
+            y: target.y,
+            width: scene.canvas.width,
+            height: target.height
+        };
+
+        this.vertical = {
+            ...this.vertical,
+            x: target.x,
+            y: 0,
+            width: target.width,
+            height: scene.canvas.height
+        };
+    }
+
+    render(scene) {
+        for (const object of [this.horizontal, this.vertical]) {
+            scene.lineWidth = "1";
+            scene.strokeStyle = object.color;
+            scene.strokeRect(object.x, object.y, object.width, object.height);
+        }
+    }
+}
+
+
+const raycast = (scene, object) => {
+    const common = {color: '#000000'};
+
+    return {
+        horizontal: {
+            ...common,
+            x: 0,
+            y: object.y,
+            width: scene.canvas.width,
+            height: object.height
+        },
+
+        vertical: {
+            ...common,
+            x: object.x,
+            y: 0,
+            width: object.width,
+            height: scene.canvas.height
+        }
+    }
+}
 
 class Player {
     constructor(x, y, width, height, color) {
@@ -223,7 +333,8 @@ class Player {
         this.xVelocity = this.baseXVelocity;
         this.yVelocity = this.baseYVelocity;
         this.lastLog = {};
-        this.beam = new Beam();
+        this.raycast = new Raycast();
+        this.direction = null;
     }
 
     log(...args) {
@@ -236,18 +347,22 @@ class Player {
 
     moveLeft(velocity) {
         this.x -= velocity;
+        this.direction = DIRECTION.LEFT;
     }
 
     moveRight(velocity) {
         this.x += velocity;
+        this.direction = DIRECTION.RIGHT;
     }
 
     moveUp(velocity) {
         this.y -= velocity;
+        this.direction = DIRECTION.TOP;
     }
 
     moveDown(velocity) {
         this.y += velocity;
+        this.direction = DIRECTION.BOTTOM;
     }
 
     // returns closest objects to player
@@ -329,12 +444,13 @@ class Player {
         // player can be close to multiple top objects
 
         /////////////// mark
-        const nearby = findNearbyObjects(this, objects);
+        // const nearby = findNearbyObjects(this, objects);
         // this.log(nearby)
-        const closestObjects = groupClosestObjectsByLocation(this, nearby);
+        // const closestObjects = groupClosestObjectsByLocation(this, nearby);
 
         // const closestObjects = this.closest(scene, this, objects);
-        this.log(closestObjects)
+        // this.log(closestObjects)
+        const closestObjects = closest(scene, this, objects);
 
         for (const object of objects) {
             object.unMarkAsClosest();
@@ -346,19 +462,19 @@ class Player {
         this.mark(closestObjects.left.objects);
         ///////////////
 
-        // const velocity = {
-        //     top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top - 1),
-        //     right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right - 1),
-        //     bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
-        //     left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
-        // }
-
         const velocity = {
-            top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top),
-            right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right),
-            bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom),
-            left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left)
+            top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top - 1),
+            right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right - 1),
+            bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom - 1),
+            left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
         }
+
+        // const velocity = {
+        //     top: closestObjects.top.distance.top === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.top.distance.top),
+        //     right: closestObjects.right.distance.right === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.right.distance.right),
+        //     bottom: closestObjects.bottom.distance.bottom === undefined ? this.baseYVelocity : Math.min(this.baseYVelocity, closestObjects.bottom.distance.bottom),
+        //     left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left)
+        // }
 
         //////////////////////////////////////// movement
         if (keyboard.right) {
@@ -399,7 +515,7 @@ class Player {
             this.y = scene.canvas.height - this.height;
         }
 
-        this.beam.update(scene, this);
+        this.raycast.update(scene, this);
     }
 
     render(scene) {
@@ -408,7 +524,7 @@ class Player {
         scene.fillStyle = 'rgba(0, 0, 0, 1)';
         scene.font = '12px monospace';
         scene.fillText(`${this.x},${this.y}`, this.x, this.y);
-        this.beam.render(scene);
+        this.raycast.render(scene);
     }
 }
 
@@ -575,8 +691,14 @@ const box32 = new Thing('box-32', 400, 340, 40, 40, '#b399c9');
 const box33 = new Thing('box-33', 400, 380, 40, 40, '#ef8f4f');
 const box34 = new Thing('box-34', 440, 340, 40, 40, '#b399c9');
 
-const platform1 = new Thing('platform1', 50, canvas.height - 60, 150, 10, '#fff');
-const platform2 = new Thing('platform2', 250, canvas.height - 120, 150, 10, '#fff');
+const box35 = new Thing('box-35', 300, 380, 15, 15, '#ef8f4f');
+const box36 = new Thing('box-36', 300, 420, 15, 15, '#ef8f4f');
+
+const box37 = new Thing('box-37', 80, 200, 10, 10, '#ef8f4f');
+const box38 = new Thing('box-38', 80, 210, 10, 10, '#b399c9');
+
+const platform1 = new Thing('platform1', 50, 480, 150, 10, '#fff');
+const platform2 = new Thing('platform2', 250, 500, 150, 10, '#fff');
 
 // const beam = new Beam();
 // const rayTop = new Thing('ray-top', 0, 0, 0, 0, '#49a0e1');
@@ -620,6 +742,10 @@ const objects = [
     box32,
     box33,
     box34,
+    box35,
+    box36,
+    box37,
+    box38,
     player,
     // platform1,
     // platform2
