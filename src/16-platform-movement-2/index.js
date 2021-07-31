@@ -237,6 +237,8 @@ class Player {
             left: closestObjects.left.distance.left === undefined ? this.baseXVelocity : Math.min(this.baseXVelocity, closestObjects.left.distance.left - 1)
         };
 
+        this.log(velocity.top);
+
         //////////////////////////////////////// movement
         if (keyboard.right) {
             this.moveRight(velocity.right);
@@ -255,25 +257,40 @@ class Player {
             this.isOnGround = false;
         }
 
-        if (velocity.bottom === 0) {
+        if (velocity.bottom <= 0) {
             this.isOnGround = true;
             this.yVelocity = this.gravity;
         }
 
         // start jump movement
         if (keyboard.space && this.isOnGround) {
-            this.yVelocity = -this.baseYVelocity;
+            this.yVelocity = Math.max(-this.baseYVelocity, -velocity.top);
         }
 
         // when off the ground, decrease yVelocity over time
         if (!this.isOnGround) {
             // this.yVelocity *= 0.9; // resistance
+            // eventually yVelocity will become positive number because of applied gravity
+            // which will cause player to move into opposite direction (down)
             this.yVelocity = this.yVelocity * 0.9 + this.gravity;
+
+            // update player direction
+            if (this.yVelocity > 0) {
+                this.direction = DIRECTION.BOTTOM;
+            } else if (this.yVelocity < 0) {
+                this.direction = DIRECTION.TOP;
+            }
         }
 
-        // gravity
-        // TODO: calculation should depend on current player direction.
-        this.y += Math.min(this.yVelocity, velocity.bottom);
+        // move player (top or down)
+        // calculate player y position. respect max bottom and top velocity.
+        if (this.direction !== DIRECTION.TOP) {
+            // moving down
+            this.y += Math.min(this.yVelocity, velocity.bottom);
+        } else if (this.direction !== DIRECTION.BOTTOM) {
+            // moving up
+            this.y += Math.max(this.yVelocity, -velocity.top);
+        }
 
         /////////////////////////////////////// scene boundaries
         // top boundary
@@ -344,6 +361,7 @@ const objects = [
     new Thing('box', 500, canvas.height - 120, 40, 40, COLORS.ORANGE),
     new Thing('box-1', 100, canvas.height - 160, 40, 40, COLORS.ORANGE),
     new Thing('platform', 200, canvas.height - 160, 40, 10, COLORS.YELLOW),
+    new Thing('box-2', 350, canvas.height - 200, 120, 40, COLORS.ORANGE),
 
     new Player(canvas.width / 2, canvas.height - 180, 20, 20, COLORS.GREEN)
 ];
